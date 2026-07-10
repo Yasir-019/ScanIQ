@@ -8,9 +8,10 @@ import { InstallBanner } from "@/components/InstallBanner";
 import { useSettings } from "@/lib/settings";
 import AppShell from "@/components/AppShell";
 import ScanScreen from "./pages/Scan";
-import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound.tsx";
 
+// Lazy-loaded routes — code-split for faster initial load
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const HistoryScreen = lazy(() => import("./pages/History"));
 const GenerateScreen = lazy(() => import("./pages/Generate"));
 const ProfileScreen = lazy(() => import("./pages/Profile"));
@@ -28,14 +29,16 @@ const App = () => {
   return (
     <ErrorBoundary>
       <TooltipProvider>
-          <OfflineBanner />
-          <InstallBanner />
-          <Sonner position="top-center" />
+        <OfflineBanner />
+        <InstallBanner />
+        <Sonner position="top-center" />
         <BrowserRouter>
           {!onboarded ? (
-            <Routes>
-              <Route path="*" element={<Onboarding />} />
-            </Routes>
+            <Suspense fallback={<PageFallback />}>
+              <Routes>
+                <Route path="*" element={<Onboarding />} />
+              </Routes>
+            </Suspense>
           ) : (
             <Routes>
               <Route element={<AppShell />}>
@@ -80,7 +83,6 @@ const App = () => {
                     </Suspense>
                   }
                 />
-                </Route>
                 <Route
                   path="/privacy"
                   element={
@@ -89,11 +91,12 @@ const App = () => {
                     </Suspense>
                   }
                 />
-              <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
             </Routes>
           )}
         </BrowserRouter>
-        </TooltipProvider>
+      </TooltipProvider>
     </ErrorBoundary>
   );
 };

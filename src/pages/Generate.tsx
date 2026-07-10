@@ -43,7 +43,7 @@ function buildPayload(type: GenType, f: Record<string, string>): string {
 export default function GenerateScreen() {
   const { t } = useTranslation();
   const [type, setType] = useState<GenType>("url");
-  const [fields, setFields] = useState<Record<string, string>>({ url: "https://lovable.dev" });
+  const [fields, setFields] = useState<Record<string, string>>({ url: "https://" });
   const [dataUrl, setDataUrl] = useState<string>("");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 

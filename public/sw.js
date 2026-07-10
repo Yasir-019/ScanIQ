@@ -243,13 +243,17 @@ function isStaticAsset(request) {
   );
 }
 
-// Trim cache to maximum size
+// Trim cache to maximum size (iterative, non-blocking)
 async function trimCache(cacheName, maxItems) {
-  const cache = await caches.open(cacheName);
-  const keys = await cache.keys();
-  if (keys.length > maxItems) {
-    await cache.delete(keys[0]);
-    trimCache(cacheName, maxItems);
+  try {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length > maxItems) {
+      const toDelete = keys.slice(0, keys.length - maxItems);
+      await Promise.all(toDelete.map((key) => cache.delete(key)));
+    }
+  } catch {
+    // Non-critical — ignore
   }
 }
 

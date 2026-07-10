@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Flashlight, FlashlightOff, ImageUp, Keyboard, X, Camera, CameraOff, RotateCcw, AlertTriangle } from "lucide-react";
 import { getScannerService, type ZoomCapabilities } from "@/lib/scanner-service";
@@ -477,11 +477,11 @@ export default function ScanScreen() {
   );
 }
 
-function Corner({ className = "" }: { className?: string }) {
+const Corner = memo(function Corner({ className = "" }: { className?: string }) {
   return (
     <span
       className={`absolute h-6 w-6 rounded-tl-xl border-l-[3px] border-t-[3px] border-primary ${className}`}
       aria-hidden
     />
   );
-}
+});
