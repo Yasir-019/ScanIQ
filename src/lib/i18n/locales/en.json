@@ -1,0 +1,221 @@
+{
+  "app": {
+    "name": "ScanIQ",
+    "tagline": "Scan anything. Understand instantly."
+  },
+  "nav": {
+    "scan": "Scan",
+    "history": "History",
+    "generate": "Generate",
+    "profile": "Profile"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "clear": "Clear",
+    "copy": "Copy",
+    "share": "Share",
+    "download": "Download",
+    "open": "Open",
+    "retry": "Retry",
+    "back": "Back",
+    "continue": "Continue",
+    "skip": "Skip",
+    "loading": "Loading…",
+    "search": "Search"
+  },
+  "scan": {
+    "topBadge": "ScanIQ",
+    "torchOn": "Turn flashlight on",
+    "torchOff": "Turn flashlight off",
+    "hint": "Point your camera at a QR or barcode",
+    "imageButton": "Image",
+    "manualButton": "Manual",
+    "manualTitle": "Enter code manually",
+    "manualPlaceholder": "Paste a URL or barcode digits",
+    "manualSubmit": "Process",
+    "noCodeFound": "No code found in image",
+    "cameraBlocked": "Camera blocked",
+    "cameraBlockedHelp": "Allow camera access in your browser/app settings, then return to this screen.",
+    "cameraBlockedPermanent": "Camera access is permanently denied. Open your device settings to allow camera access for this app.",
+    "openSettings": "Open Settings",
+    "cameraUnavailable": "No camera available",
+    "cameraUnavailableHelp": "This device doesn't have a camera or it's being used by another app. You can still scan from images or enter codes manually.",
+    "cameraInitFailed": "Camera failed to start",
+    "cameraInitFailedHelp": "Something went wrong starting the camera. This can happen if another app is using it.",
+    "scanFailedRetry": "Scan failed. Tap to try again.",
+    "retryCamera": "Retry camera",
+    "imageScanFailed": "Could not read the image. Try a clearer photo."
+  },
+  "history": {
+    "title": "History",
+    "tabAll": "All",
+    "tabFavorites": "Favorites",
+    "searchPlaceholder": "Search scans",
+    "emptyAll": "No scans yet. Start scanning!",
+    "emptyFavorites": "No favorites yet. Star a scan to save it.",
+    "deleted": "Deleted",
+    "cleared": "History cleared",
+    "addedFavorite": "Added to favorites",
+    "removedFavorite": "Removed from favorites"
+  },
+  "generate": {
+    "title": "Generate",
+    "placeholder": "Fill in fields below",
+    "downloaded": "QR code downloaded",
+    "fields": {
+      "url": "URL",
+      "text": "Text",
+      "ssid": "Network name (SSID)",
+      "password": "Password",
+      "encryption": "Encryption",
+      "name": "Full name",
+      "phone": "Phone",
+      "email": "Email",
+      "to": "To",
+      "subject": "Subject (optional)",
+      "number": "Number",
+      "message": "Message",
+      "phoneNumber": "Phone number"
+    },
+    "types": {
+      "url": "URL",
+      "text": "Text",
+      "wifi": "Wi-Fi",
+      "vcard": "Contact",
+      "email": "Email",
+      "sms": "SMS",
+      "phone": "Phone"
+    },
+    "encryption": {
+      "wpa": "WPA / WPA2",
+      "wep": "WEP",
+      "none": "None"
+    }
+  },
+  "result": {
+    "openLink": "Open link",
+    "copyPassword": "Copy password",
+    "passwordCopied": "Password copied",
+    "copied": "Copied to clipboard",
+    "explain": "Explain",
+    "rawContent": "Raw content",
+    "callNumber": "Call {{n}}",
+    "emailTo": "Email {{n}}",
+    "textNumber": "Text {{n}}",
+    "saveContact": "Save contact",
+    "openInMaps": "Open in maps",
+    "productSoon": "Product lookup coming soon.",
+    "encryption": "Encryption",
+    "password": "Password",
+    "wifi": "Wi-Fi",
+    "safe": "Safe",
+    "suspicious": "Suspicious",
+    "risky": "Risky",
+    "types": {
+      "url": "Link",
+      "wifi": "Wi-Fi network",
+      "vcard": "Contact",
+      "email": "Email",
+      "sms": "SMS",
+      "phone": "Phone",
+      "geo": "Location",
+      "product": "Product",
+      "text": "Text",
+      "payment": "Payment"
+    },
+    "smartAction": "Smart action detected",
+    "translate": "Translate",
+    "autoCopied": "Text auto-copied to clipboard",
+    "autoWifiCopied": "Wi-Fi password auto-copied",
+    "paymentDetected": "Payment detected",
+    "payee": "Payee",
+    "amount": "Amount",
+    "openPayment": "Open payment app"
+  },
+  "safety": {
+    "warningTitle": "This link looks suspicious",
+    "dangerTitle": "This link may be dangerous",
+    "openAnyway": "Open anyway",
+    "openAtRisk": "Open at your own risk",
+    "confirmTitle": "Are you sure?",
+    "confirmBody": "This link has been flagged as potentially dangerous. Opening it could expose you to phishing, malware, or other threats. Proceed only if you trust the source."
+  },
+  "privacy": {
+    "title": "Privacy & Data",
+    "subtitle": "Your privacy matters. Here's how ScanIQ handles your data.",
+    "localDataTitle": "Data stays on your device",
+    "localDataBody": "All scan history and settings are stored locally on your device using IndexedDB. Nothing is sent to any server or cloud service.",
+    "cameraTitle": "Camera usage",
+    "cameraBody": "The camera is used only for live scanning of QR codes and barcodes. Your camera feed is never recorded, stored, or transmitted anywhere.",
+    "noTrackingTitle": "No tracking or analytics",
+    "noTrackingBody": "ScanIQ does not use any analytics, tracking scripts, or third-party data collection. We don't know who you are or what you scan.",
+    "clearDataTitle": "You control your data",
+    "clearDataBody": "You can clear your entire scan history at any time from the History screen. Uninstalling the app removes all data."
+  },
+  "profile": {
+    "title": "Profile",
+    "proHeader": "ScanIQ Pro",
+    "proTitle": "Unlock unlimited scanning",
+    "proBody": "Cloud sync, unlimited AI explains, custom QR branding, bulk export.",
+    "upgrade": "Upgrade",
+    "darkMode": "Dark mode",
+    "beep": "Beep on scan",
+    "vibrate": "Vibrate on scan",
+    "autoOpen": "Auto-open URLs",
+    "language": "Language",
+    "privacy": "Privacy & Data",
+    "shareSection": "Share ScanIQ",
+    "shareLink": "Share app link",
+    "shareLinkSub": "Send a friend the download link",
+    "shareQR": "Show app QR code",
+    "shareQRSub": "Let someone scan to install",
+    "about": "About ScanIQ",
+    "aboutBody": "v1.0 · Scan anything. Understand instantly.",
+    "automationSection": "Smart Automation",
+    "autoCopy": "Auto-copy text",
+    "autoWifi": "Auto-copy Wi-Fi password"
+  },
+  "language": {
+    "title": "Language",
+    "subtitle": "Choose your preferred language. Changes apply instantly.",
+    "selected": "Selected"
+  },
+  "shareQR": {
+    "title": "Share app QR",
+    "subtitle": "Anyone can scan this to install ScanIQ.",
+    "downloadButton": "Download",
+    "shareButton": "Share image"
+  },
+  "onboarding": {
+    "slide1Title": "Scan anything, instantly",
+    "slide1Body": "QR codes, product barcodes, Wi-Fi cards — all detected in milliseconds.",
+    "slide2Title": "Smart actions",
+    "slide2Body": "Open links, save contacts, connect to Wi-Fi, and ask AI to explain what you scanned.",
+    "slide3Title": "Stay safe",
+    "slide3Body": "We flag suspicious links before you tap. Your scan history stays on your device.",
+    "start": "Start scanning"
+  },
+  "errors": {
+    "offline": "You're offline. Some features may be limited.",
+    "unexpected": "Something went wrong. Please try again.",
+    "shareFailed": "Sharing failed. Content copied to clipboard instead.",
+    "copyFailed": "Could not copy to clipboard.",
+    "storageFailed": "Could not save data. Storage may be full.",
+    "linkCopied": "Link copied to clipboard",
+    "imageSaved": "Image saved",
+    "shareFallback": "Couldn't share — copy this link: "
+  },
+  "notFound": {
+    "title": "Oops! Page not found",
+    "home": "Return to Home"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "body": "An unexpected error occurred. Please try again.",
+    "details": "Error details",
+    "tryAgain": "Try again",
+    "reload": "Reload app"
+  }
+}
