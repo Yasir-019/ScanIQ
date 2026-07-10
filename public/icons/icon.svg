@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4"/>
+      <stop offset="100%" style="stop-color:#0284c7"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  
+  <!-- QR Scanner Frame -->
+  <g fill="none" stroke="white" stroke-width="24" stroke-linecap="round">
+    <!-- Top-left corner -->
+    <path d="M160 192v-48c0-17.7 14.3-32 32-32h48"/>
+    <!-- Top-right corner -->
+    <path d="M352 192v-48c0-17.7-14.3-32-32-32h-48"/>
+    <!-- Bottom-left corner -->
+    <path d="M160 320v48c0 17.7 14.3 32 32 32h48"/>
+    <!-- Bottom-right corner -->
+    <path d="M352 320v48c0 17.7-14.3 32-32 32h-48"/>
+  </g>
+  
+  <!-- Center QR element -->
+  <rect x="224" y="224" width="64" height="64" rx="12" fill="white"/>
+  
+  <!-- Scan dots -->
+  <circle cx="192" cy="256" r="8" fill="white"/>
+  <circle cx="320" cy="256" r="8" fill="white"/>
+  <circle cx="256" cy="192" r="8" fill="white"/>
+  <circle cx="256" cy="320" r="8" fill="white"/>
+</svg>

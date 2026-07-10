@@ -1,0 +1,48 @@
+{
+  "packageId": "app.lovable.bd8a6ecb3f924abcb68eed2dd875e450",
+  "host": "scaniq.app",
+  "name": "ScanIQ",
+  "shortName": "ScanIQ",
+  "launcherName": "ScanIQ",
+  "display": "standalone",
+  "themeColor": "#0a1014",
+  "navigationColor": "#0a1014",
+  "navigationColorDark": "#0a1014",
+  "navigationDividerColor": "#0a1014",
+  "navigationDividerColorDark": "#0a1014",
+  "backgroundColor": "#0a1014",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://scaniq.app/icons/icon-512x512.png",
+  "maskableIconUrl": "https://scaniq.app/icons/icon-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "android.keystore",
+    "alias": "scaniq"
+  },
+  "appVersionCode": 1,
+  "appVersionName": "1.0.0",
+  "shortcuts": [
+    {
+      "name": "Scan QR Code",
+      "shortName": "Scan",
+      "url": "/scan",
+      "chosenIconUrl": "https://scaniq.app/icons/icon-scan.png"
+    },
+    {
+      "name": "Generate QR Code",
+      "shortName": "Generate",
+      "url": "/generate",
+      "chosenIconUrl": "https://scaniq.app/icons/icon-generate.png"
+    }
+  ],
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "fallbackType": "customtabs"
+}

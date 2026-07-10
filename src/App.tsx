@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { InstallBanner } from "@/components/InstallBanner";
 import { useSettings } from "@/lib/settings";
 import AppShell from "@/components/AppShell";
 import ScanScreen from "./pages/Scan";
@@ -28,6 +29,7 @@ const App = () => {
     <ErrorBoundary>
       <TooltipProvider>
           <OfflineBanner />
+          <InstallBanner />
           <Sonner position="top-center" />
         <BrowserRouter>
           {!onboarded ? (

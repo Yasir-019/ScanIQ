@@ -217,5 +217,11 @@
     "details": "Error details",
     "tryAgain": "Try again",
     "reload": "Reload app"
+  },
+  "install": {
+    "title": "Install ScanIQ",
+    "description": "Add to home screen for quick access",
+    "button": "Install",
+    "dismiss": "Dismiss"
   }
 }
