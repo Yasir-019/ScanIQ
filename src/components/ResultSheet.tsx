@@ -28,7 +28,7 @@ import { parseScanContent } from "@/lib/scan/parser";
 import { analyzeUrlSafety, type SafetyResult } from "@/lib/url-safety";
 import { useActionStats } from "@/lib/action-stats";
 import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { db } from "@/lib/db";
 import {
@@ -117,6 +117,15 @@ export function ResultSheet({ scan, onClose }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const recordAction = useActionStats((s) => s.record);
   const topAction = useActionStats((s) => s.topAction);
+  const backButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (showExplain && !loadingExplain) {
+      setTimeout(() => {
+        backButtonRef.current?.focus();
+      }, 50);
+    }
+  }, [showExplain, loadingExplain]);
 
   useEffect(() => {
     if (scan) {
@@ -497,7 +506,13 @@ export function ResultSheet({ scan, onClose }: Props) {
                       </li>
                     ))}
                   </ul>
-                  <Button variant="outline" size="sm" onClick={() => setShowExplain(false)} className="w-full mt-2 rounded-xl">
+                  <Button
+                    ref={backButtonRef}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowExplain(false)}
+                    className="w-full mt-2 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
                     Back to Actions
                   </Button>
                 </div>

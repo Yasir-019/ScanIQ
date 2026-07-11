@@ -422,7 +422,12 @@ export default function ScanScreen() {
 
       {cameraState === "active" && (
         <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
-          <div className="scan-reticle relative h-64 w-64 max-w-[78vw]">
+          <div
+            className="scan-reticle relative h-64 w-64 max-w-[78vw]"
+            role="region"
+            aria-live="polite"
+            aria-label="QR and Barcode scan target viewfinder. Center a code to scan."
+          >
             <Corner className="-left-1 -top-1" />
             <Corner className="-right-1 -top-1 rotate-90" />
             <Corner className="-bottom-1 -left-1 -rotate-90" />
@@ -445,6 +450,7 @@ export default function ScanScreen() {
             step={zoomCaps.step}
             onValueChange={(v) => applyZoom(v[0])}
             className="flex-1"
+            aria-label="Camera Zoom"
           />
           <span className="w-9 text-right text-xs text-white/60 tabular-nums">
             {zoomCaps.max.toFixed(1)}x

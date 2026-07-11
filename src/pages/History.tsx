@@ -44,33 +44,36 @@ const HistoryItem = memo(function HistoryItem({
   const Icon = typeIcon[scan.type] ?? FileText;
   return (
     <li>
-      <button
-        onClick={() => onSelect(scan)}
-        className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left shadow-card transition active:scale-[0.99]"
-      >
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1 truncate font-medium">
-            {scan.favorite && <Star className="h-3.5 w-3.5 fill-warning text-warning" />}
-            <span className="truncate">{scan.content}</span>
+      <div className="group relative flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card transition active:scale-[0.99] hover:bg-secondary/20">
+        <button
+          onClick={() => onSelect(scan)}
+          className="flex flex-1 items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+          aria-label={`${scan.type} scan. content: ${scan.content}`}
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+            <Icon className="h-5 w-5" />
           </div>
-          <div className="text-xs text-muted-foreground">
-            {scan.type} · {formatTime(scan.scannedAt)}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1 truncate font-medium">
+              {scan.favorite && <Star className="h-3.5 w-3.5 fill-warning text-warning" aria-hidden="true" />}
+              <span className="truncate">{scan.content}</span>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {scan.type} · {formatTime(scan.scannedAt)}
+            </div>
           </div>
-        </div>
+        </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             onDelete(scan.id);
           }}
-          className="rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-destructive"
-          aria-label="Delete"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+          aria-label={`Delete ${scan.type} scan`}
         >
           <Trash2 className="h-4 w-4" />
         </button>
-      </button>
+      </div>
     </li>
   );
 });
