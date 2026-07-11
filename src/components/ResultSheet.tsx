@@ -11,7 +11,6 @@ import {
   MessageSquare,
   UserPlus,
   MapPin,
-  Sparkles,
   ShieldCheck,
   ShieldAlert,
   ShieldX,
@@ -21,6 +20,7 @@ import {
   Languages,
   FileText,
   Zap,
+  Search,
 } from "lucide-react";
 import type { ScanRecord, SafetyStatus, ScanContentType } from "@/lib/scan/types";
 import { parseScanContent } from "@/lib/scan/parser";
@@ -321,9 +321,16 @@ export function ResultSheet({ scan, onClose }: Props) {
         );
       case "product":
         return (
-          <div className="rounded-2xl border border-border bg-secondary/50 p-4 text-sm text-muted-foreground">
-            {t("result.productSoon")}
-          </div>
+          <Button
+            onClick={() => {
+              window.open(`https://www.google.com/search?q=${encodeURIComponent(parsed.data.code)}`, "_blank", "noopener,noreferrer");
+            }}
+            className="w-full"
+            size="lg"
+          >
+            <Search className="mr-2 h-4 w-4" />
+            {t("result.searchProduct", "Search Product")}
+          </Button>
         );
       default:
         return null;
@@ -371,7 +378,7 @@ export function ResultSheet({ scan, onClose }: Props) {
             {renderSmartActions()}
 
             {/* Quick actions row */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button variant="secondary" onClick={copy} className="h-12">
                 <Copy className="h-4 w-4" />
                 <span className="text-xs">{t("common.copy")}</span>
@@ -379,10 +386,6 @@ export function ResultSheet({ scan, onClose }: Props) {
               <Button variant="secondary" onClick={share} className="h-12">
                 <Share2 className="h-4 w-4" />
                 <span className="text-xs">{t("common.share")}</span>
-              </Button>
-              <Button variant="secondary" disabled className="h-12 opacity-60" title="AI explain — coming soon">
-                <Sparkles className="h-4 w-4" />
-                <span className="text-xs">{t("result.explain")}</span>
               </Button>
             </div>
 

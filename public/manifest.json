@@ -71,7 +71,7 @@
       "name": "Scan QR Code",
       "short_name": "Scan",
       "description": "Open camera to scan a QR code or barcode",
-      "url": "/scan",
+      "url": "/",
       "icons": [{ "src": "/icons/icon-scan.png", "sizes": "192x192" }]
     },
     {
@@ -109,8 +109,8 @@
   "related_applications": [
     {
       "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=app.lovable.bd8a6ecb3f924abcb68eed2dd875e450",
-      "id": "app.lovable.bd8a6ecb3f924abcb68eed2dd875e450"
+      "url": "https://play.google.com/store/apps/details?id=com.scaniq.app",
+      "id": "com.scaniq.app"
     }
   ]
 }

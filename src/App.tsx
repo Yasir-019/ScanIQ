@@ -18,6 +18,9 @@ const ProfileScreen = lazy(() => import("./pages/Profile"));
 const ShareQRScreen = lazy(() => import("./pages/ShareQR"));
 const LanguageScreen = lazy(() => import("./pages/Language"));
 const PrivacyScreen = lazy(() => import("./pages/Privacy"));
+const TermsScreen = lazy(() => import("./pages/Terms"));
+const AboutScreen = lazy(() => import("./pages/About"));
+const LicensesScreen = lazy(() => import("./pages/Licenses"));
 
 const PageFallback = () => (
   <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading…</div>
@@ -88,6 +91,30 @@ const App = () => {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <PrivacyScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/terms"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <TermsScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/about"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AboutScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/licenses"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <LicensesScreen />
                     </Suspense>
                   }
                 />

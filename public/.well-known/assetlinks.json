@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "app.lovable.bd8a6ecb3f924abcb68eed2dd875e450",
+      "package_name": "com.scaniq.app",
       "sha256_cert_fingerprints": [
         "REPLACE_WITH_YOUR_SHA256_FINGERPRINT"
       ]

@@ -1,16 +1,13 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "@/lib/settings";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
-  Sparkles,
   Moon,
   Sun,
   Volume2,
   Vibrate,
   Link2,
-  Crown,
   Share2,
   QrCode,
   ChevronRight,
@@ -19,6 +16,9 @@ import {
   ClipboardCopy,
   WifiIcon,
   Zap,
+  FileText,
+  Code,
+  Info,
 } from "lucide-react";
 import { shareApp } from "@/lib/share";
 import { SUPPORTED_LANGUAGES } from "@/lib/i18n";
@@ -43,16 +43,6 @@ export default function ProfileScreen() {
     <div className="safe-top h-full overflow-y-auto px-4 pb-6 pt-4">
       <h1 className="mb-5 text-2xl font-bold tracking-tight">{t("profile.title")}</h1>
 
-      <div className="mb-5 overflow-hidden rounded-3xl bg-gradient-hero p-5 text-primary-foreground shadow-elegant">
-        <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider opacity-90">
-          <Crown className="h-3.5 w-3.5" /> {t("profile.proHeader")}
-        </div>
-        <h2 className="mb-2 text-xl font-bold">{t("profile.proTitle")}</h2>
-        <p className="mb-4 text-sm opacity-90">{t("profile.proBody")}</p>
-        <Button variant="secondary" className="rounded-full bg-white text-primary hover:bg-white/90">
-          <Sparkles className="mr-2 h-4 w-4" /> {t("profile.upgrade")}
-        </Button>
-      </div>
 
       <div className="mb-5 rounded-3xl border border-border bg-card p-2 shadow-card">
         <SettingRow
@@ -91,6 +81,36 @@ export default function ProfileScreen() {
             <Shield className="h-4 w-4" />
           </div>
           <div className="flex-1 text-sm font-medium">{t("profile.privacy")}</div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+        <Link
+          to="/terms"
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 transition hover:bg-secondary"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-foreground">
+            <FileText className="h-4 w-4" />
+          </div>
+          <div className="flex-1 text-sm font-medium">{t("profile.terms", "Terms of Service")}</div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+        <Link
+          to="/licenses"
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 transition hover:bg-secondary"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-foreground">
+            <Code className="h-4 w-4" />
+          </div>
+          <div className="flex-1 text-sm font-medium">{t("profile.licenses", "Open Source Licenses")}</div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+        <Link
+          to="/about"
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 transition hover:bg-secondary"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-foreground">
+            <Info className="h-4 w-4" />
+          </div>
+          <div className="flex-1 text-sm font-medium">{t("profile.about")}</div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
       </div>
