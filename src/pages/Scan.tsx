@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
-import { Flashlight, FlashlightOff, ImageUp, Keyboard, X, Camera, CameraOff, RotateCcw, AlertTriangle, Settings } from "lucide-react";
+import { Flashlight, FlashlightOff, ImageUp, Keyboard, Camera, Settings } from "lucide-react";
 import { getScannerService, type ZoomCapabilities } from "@/lib/scanner-service";
 import { parseScanContent } from "@/lib/scan/parser";
 import { db, pruneFreeHistory } from "@/lib/db";
@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { scanFeedback } from "@/lib/feedback";
 import { toast } from "sonner";
+import { usePinchToZoom } from "@/hooks/use-pinch-to-zoom";
+import { CameraOverlay } from "@/components/CameraOverlay";
 
 const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
 
@@ -31,18 +33,20 @@ export default function ScanScreen() {
   const [torch, setTorch] = useState(false);
   const [torchAvail, setTorchAvail] = useState(false);
   const [zoomCaps, setZoomCaps] = useState<ZoomCapabilities | null>(null);
-  const [zoom, setZoom] = useState(1);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualValue, setManualValue] = useState("");
   const [manualError, setManualError] = useState("");
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Pinch tracking refs
-  const pinchStartDistRef = useRef<number | null>(null);
-  const pinchStartZoomRef = useRef<number>(1);
-  const rafRef = useRef<number | null>(null);
-  const pendingZoomRef = useRef<number | null>(null);
+  const {
+    zoom,
+    applyZoom,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+  } = usePinchToZoom(zoomCaps);
+
   const mountedRef = useRef(true);
 
   // Stable ref for translation function
@@ -219,38 +223,13 @@ export default function ScanScreen() {
     }
   };
 
-  const applyZoom = (next: number) => {
-    if (!zoomCaps) return;
-    const clamped = Math.max(zoomCaps.min, Math.min(zoomCaps.max, next));
-    setZoom(clamped);
-    pendingZoomRef.current = clamped;
-    if (rafRef.current == null) {
-      rafRef.current = requestAnimationFrame(() => {
-        rafRef.current = null;
-        const v = pendingZoomRef.current;
-        if (v != null) getScannerService().setZoom(v);
-      });
+  const handleManualValueChange = (val: string) => {
+    setManualValue(val);
+    if (val.length > 2048) {
+      setManualError(t("scan.manualErrorTooLong", "Content exceeds the 2048 character limit."));
+    } else {
+      setManualError("");
     }
-  };
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && zoomCaps) {
-      const [a, b] = [e.touches[0], e.touches[1]];
-      pinchStartDistRef.current = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      pinchStartZoomRef.current = zoom;
-    }
-  };
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && pinchStartDistRef.current && zoomCaps) {
-      e.preventDefault();
-      const [a, b] = [e.touches[0], e.touches[1]];
-      const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      const ratio = dist / pinchStartDistRef.current;
-      applyZoom(pinchStartZoomRef.current * ratio);
-    }
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (e.touches.length < 2) pinchStartDistRef.current = null;
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,93 +264,9 @@ export default function ScanScreen() {
     setManualValue("");
   };
 
-  const handleManualValueChange = (val: string) => {
-    setManualValue(val);
-    if (val.length > 2048) {
-      setManualError(t("scan.manualErrorTooLong", "Content exceeds the 2048 character limit."));
-    } else {
-      setManualError("");
-    }
-  };
 
-  const renderCameraOverlay = () => {
-    if (cameraState === "active" || cameraState === "loading") return null;
 
-    const overlayConfig: Record<string, {
-      icon: React.ReactNode;
-      title: string;
-      help: string;
-      showRetry: boolean;
-      showSettings?: boolean;
-    }> = {
-      denied: {
-        icon: <X className="mx-auto h-10 w-10 text-destructive" />,
-        title: t("scan.cameraBlocked"),
-        help: t("scan.cameraBlockedHelp"),
-        showRetry: true,
-      },
-      "denied-permanent": {
-        icon: <CameraOff className="mx-auto h-10 w-10 text-destructive" />,
-        title: t("scan.cameraBlocked"),
-        help: t("scan.cameraBlockedPermanent"),
-        showRetry: true,
-        showSettings: true,
-      },
-      unavailable: {
-        icon: <Camera className="mx-auto h-10 w-10 text-muted-foreground" />,
-        title: t("scan.cameraUnavailable"),
-        help: t("scan.cameraUnavailableHelp"),
-        showRetry: false,
-      },
-      error: {
-        icon: <AlertTriangle className="mx-auto h-10 w-10 text-warning" />,
-        title: t("scan.cameraInitFailed"),
-        help: errorDetail || t("scan.cameraInitFailedHelp"),
-        showRetry: true,
-      },
-    };
-
-    const cfg = overlayConfig[cameraState];
-    if (!cfg) return null;
-
-    return (
-      <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/95 p-6">
-        <div className="max-w-sm space-y-3 text-center">
-          {cfg.icon}
-          <h2 className="text-xl font-semibold">{cfg.title}</h2>
-          <p className="text-sm text-muted-foreground">{cfg.help}</p>
-          <div className="flex flex-col items-center gap-2 pt-1">
-            {cfg.showRetry && (
-              <Button onClick={retryCamera} className="w-full">
-                <RotateCcw className="mr-2 h-4 w-4" /> {t("scan.retryCamera")}
-              </Button>
-            )}
-            {cfg.showSettings && (
-              <Button onClick={() => setShowPermissionGuide(true)} variant="outline" className="w-full mt-1 border-destructive/20 text-destructive hover:bg-destructive/5">
-                <Settings className="mr-2 h-4 w-4" /> {t("scan.openSettings")}
-              </Button>
-            )}
-            <div className="flex gap-2 pt-2 justify-center">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => fileRef.current?.click()}
-              >
-                <ImageUp className="mr-1 h-4 w-4" /> {t("scan.imageButton")}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setManualOpen(true)}
-              >
-                <Keyboard className="mr-1 h-4 w-4" /> {t("scan.manualButton")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Camera overlay is now a separate component.
 
   return (
     <div
@@ -485,7 +380,14 @@ export default function ScanScreen() {
 
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
 
-      {renderCameraOverlay()}
+      <CameraOverlay
+        cameraState={cameraState}
+        errorDetail={errorDetail}
+        retryCamera={retryCamera}
+        onFileSelect={() => fileRef.current?.click()}
+        onManualInput={() => setManualOpen(true)}
+        onOpenSettings={() => setShowPermissionGuide(true)}
+      />
 
       <ResultSheet scan={result} onClose={() => setResult(null)} />
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,6 @@ export default function GenerateScreen() {
   const [dataUrl, setDataUrl] = useState<string>("");
   const [fgColor, setFgColor] = useState("#0f172a");
   const [bgColor, setBgColor] = useState("#ffffff");
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const payload = useMemo(() => buildPayload(type, fields), [type, fields]);
 
@@ -254,7 +253,7 @@ export default function GenerateScreen() {
         </div>
       </div>
 
-      <canvas ref={canvasRef} hidden />
+
     </div>
   );
 }

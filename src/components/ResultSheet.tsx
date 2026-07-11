@@ -2,25 +2,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  ExternalLink,
   Copy,
   Share2,
-  Wifi,
-  Phone,
-  Mail,
-  MessageSquare,
-  UserPlus,
-  MapPin,
   ShieldCheck,
   ShieldAlert,
   ShieldX,
   Star,
-  AlertTriangle,
-  CreditCard,
-  Languages,
   FileText,
   Zap,
-  Search,
   Sparkles,
 } from "lucide-react";
 import type { ScanRecord, SafetyStatus, ScanContentType } from "@/lib/scan/types";
@@ -28,6 +17,8 @@ import { parseScanContent } from "@/lib/scan/parser";
 import { analyzeUrlSafety, type SafetyResult } from "@/lib/url-safety";
 import { useActionStats } from "@/lib/action-stats";
 import { toast } from "sonner";
+import { generateLocalAIExplanation } from "@/lib/scan/ai-explain";
+import { SmartActions } from "@/components/SmartActions";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { db } from "@/lib/db";
@@ -48,16 +39,16 @@ interface Props {
 }
 
 const TYPE_ICONS: Record<ScanContentType, React.ComponentType<{ className?: string }>> = {
-  url: ExternalLink,
-  wifi: Wifi,
-  vcard: UserPlus,
-  email: Mail,
-  sms: MessageSquare,
-  phone: Phone,
-  geo: MapPin,
+  url: FileText,
+  wifi: FileText,
+  vcard: FileText,
+  email: FileText,
+  sms: FileText,
+  phone: FileText,
+  geo: FileText,
   product: FileText,
   text: FileText,
-  payment: CreditCard,
+  payment: FileText,
 };
 
 function SafetyBadge({ status }: { status?: SafetyStatus }) {
@@ -82,32 +73,7 @@ function SafetyBadge({ status }: { status?: SafetyStatus }) {
   );
 }
 
-function SafetyWarningCard({ safety }: { safety: SafetyResult }) {
-  const { t } = useTranslation();
-  if (safety.level === "safe" || safety.reasons.length === 0) return null;
-
-  const isMalicious = safety.level === "malicious";
-
-  return (
-    <div
-      className={`rounded-2xl border p-4 text-sm ${
-        isMalicious
-          ? "border-destructive/40 bg-destructive/10 text-destructive"
-          : "border-warning/40 bg-warning/10 text-warning-foreground"
-      }`}
-    >
-      <div className="mb-2 flex items-center gap-2 font-semibold">
-        <AlertTriangle className="h-4 w-4" />
-        {isMalicious ? t("safety.dangerTitle") : t("safety.warningTitle")}
-      </div>
-      <ul className="list-inside list-disc space-y-1 text-xs opacity-90">
-        {safety.reasons.map((r, i) => (
-          <li key={i}>{r}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+// SafetyWarningCard is now imported from a separate file.
 
 export function ResultSheet({ scan, onClose }: Props) {
   const { t, i18n } = useTranslation();
@@ -136,90 +102,7 @@ export function ResultSheet({ scan, onClose }: Props) {
   }, [scan]);
 
   // Local rule-based AI explanation generator
-  const explanation = useMemo(() => {
-    if (!scan) return { summary: "", details: [] };
-    const parsed = parseScanContent(scan.content, scan.format);
-    
-    switch (scan.type) {
-      case "url": {
-        const hasHttps = scan.content.toLowerCase().startsWith("https://");
-        let host = "Unknown";
-        try { host = new URL(scan.content).hostname; } catch { /* ignore invalid URLs */ }
-        const isSuspicious = host.toLowerCase().includes("bank") || host.toLowerCase().includes("support") || host.toLowerCase().includes("login") || host.toLowerCase().includes("secure");
-        
-        return {
-          summary: "Web Link Security Analysis",
-          details: [
-            `This points to the domain: ${host}.`,
-            hasHttps 
-              ? "✅ Secure Connection: Uses HTTPS to encrypt data in transit." 
-              : "⚠️ Insecure Connection: Uses plain HTTP. Any credentials entered can be intercepted.",
-            isSuspicious 
-              ? "🚨 Brand Alert: The domain contains sensitive terms. Double-check for phishing impersonations." 
-              : "✅ No obvious brand impersonation keywords detected.",
-            "🔒 Sandboxed Access: Safely opens in your browser sandbox, blocking direct root-level modifications."
-          ]
-        };
-      }
-      case "wifi": {
-        const ssid = (parsed.data as Record<string, string>)?.ssid || "Unknown";
-        const enc = (parsed.data as Record<string, string>)?.encryption || "None";
-        return {
-          summary: "Wi-Fi Network Configuration",
-          details: [
-            `Wireless network SSID: "${ssid}".`,
-            `Security protocols: ${enc} (${enc === "WEP" ? "⚠️ Outdated" : "✅ Secure Standard"}).`,
-            "📱 Connection Flow: Tapping 'Connect' configures your system settings safely. No local network data is transmitted externally."
-          ]
-        };
-      }
-      case "vcard": {
-        const name = (parsed.data as Record<string, string>)?.name || "No name";
-        const tel = (parsed.data as Record<string, string>)?.tel || "No number";
-        const email = (parsed.data as Record<string, string>)?.email || "No email";
-        return {
-          summary: "Contact Entry Card (vCard)",
-          details: [
-            `Name details: ${name}.`,
-            `Phone contact: ${tel}.`,
-            `Email address: ${email}.`,
-            "👤 Local Sync: Tapping 'Add Contact' saves this entry to your native address book directly. No contacts sync online."
-          ]
-        };
-      }
-      case "payment": {
-        return {
-          summary: "Payment Payload Specifications",
-          details: [
-            "This contains a payment request link.",
-            "🔒 Local check: Secure bank scheme formatting detected.",
-            "💸 Security Reminder: Check the payee details and exact billing amount before typing in your financial transaction PIN.",
-            "Offline Hand-off: Hands over parameter parsing directly to your payment app."
-          ]
-        };
-      }
-      case "product": {
-        const code = (parsed.data as Record<string, string>)?.code || scan.content;
-        return {
-          summary: "Commercial Product Barcode",
-          details: [
-            `Global barcode index: ${code}.`,
-            "🛒 Product Code standard: Registered retail GTIN / UPC / EAN standard.",
-            "🌐 Web Search Lookup: Runs inquiries on global consumer goods indexes to find manufacturer information, ingredients, and retail prices."
-          ]
-        };
-      }
-      default:
-        return {
-          summary: "Text Information Description",
-          details: [
-            "Payload type: Plain Text.",
-            "📝 Raw data payload contains generic formatted characters.",
-            "🛠️ Core Utilities: Copy information directly to system clipboard or share via local messenger apps."
-          ]
-        };
-    }
-  }, [scan]);
+  const explanation = useMemo(() => generateLocalAIExplanation(scan), [scan]);
 
   const triggerExplain = () => {
     setShowExplain(true);
@@ -296,156 +179,7 @@ export function ResultSheet({ scan, onClose }: Props) {
     window.open(scan.content, "_blank", "noopener,noreferrer");
   };
 
-  /** Build the primary + secondary action buttons */
-  const renderSmartActions = () => {
-    switch (parsed.type) {
-      case "url": {
-        const isMalicious = safety.level === "malicious";
-        const isSuspicious = safety.level === "suspicious";
-        return (
-          <>
-            <SafetyWarningCard safety={safety} />
-            <Button
-              onClick={openUrl}
-              className="w-full"
-              size="lg"
-              variant={isMalicious ? "destructive" : isSuspicious ? "outline" : "default"}
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              {isMalicious
-                ? t("safety.openAtRisk")
-                : isSuspicious
-                  ? t("safety.openAnyway")
-                  : t("result.openLink")}
-            </Button>
-          </>
-        );
-      }
-      case "wifi":
-        return (
-          <div className="rounded-2xl border border-border bg-secondary/50 p-4 text-sm">
-            <div className="mb-2 flex items-center gap-2 font-semibold">
-              <Wifi className="h-4 w-4" /> {parsed.data.ssid || t("result.wifi")}
-            </div>
-            <div className="space-y-1 text-muted-foreground">
-              <div>{t("result.encryption")}: {parsed.data.encryption}</div>
-              {parsed.data.password && <div>{t("result.password")}: {parsed.data.password}</div>}
-            </div>
-            <Button onClick={() => {
-              navigator.clipboard.writeText(parsed.data.password || "");
-              toast.success(t("result.passwordCopied"));
-              recordAction("copy_password");
-            }} className="mt-3 w-full" variant={primaryAction === "copy_password" ? "default" : "secondary"}>
-              {t("result.copyPassword")}
-            </Button>
-          </div>
-        );
-      case "phone":
-        return (
-          <Button asChild className="w-full" size="lg">
-            <a href={`tel:${parsed.data.number}`} onClick={() => recordAction("call")}>
-              <Phone className="mr-2 h-4 w-4" /> {t("result.callNumber", { n: parsed.data.number })}
-            </a>
-          </Button>
-        );
-      case "email":
-        return (
-          <Button asChild className="w-full" size="lg">
-            <a href={`mailto:${parsed.data.to}`} onClick={() => recordAction("send_email")}>
-              <Mail className="mr-2 h-4 w-4" /> {t("result.emailTo", { n: parsed.data.to })}
-            </a>
-          </Button>
-        );
-      case "sms":
-        return (
-          <Button asChild className="w-full" size="lg">
-            <a href={`sms:${parsed.data.number}`} onClick={() => recordAction("send_sms")}>
-              <MessageSquare className="mr-2 h-4 w-4" /> {t("result.textNumber", { n: parsed.data.number })}
-            </a>
-          </Button>
-        );
-      case "vcard":
-        return (
-          <Button onClick={() => {
-            const blob = new Blob([parsed.data.raw], { type: "text/vcard" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${parsed.data.name || "contact"}.vcf`;
-            a.click();
-            URL.revokeObjectURL(url);
-            recordAction("save_contact");
-          }} className="w-full" size="lg">
-            <UserPlus className="mr-2 h-4 w-4" /> {t("result.saveContact")}
-          </Button>
-        );
-      case "geo":
-        return (
-          <Button asChild className="w-full" size="lg">
-            <a href={`https://www.google.com/maps?q=${encodeURIComponent(parsed.data.coords)}`} target="_blank" rel="noopener noreferrer" onClick={() => recordAction("open_maps")}>
-              <MapPin className="mr-2 h-4 w-4" /> {t("result.openInMaps")}
-            </a>
-          </Button>
-        );
-      case "payment":
-        return (
-          <div className="space-y-3">
-            <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
-              <div className="mb-2 flex items-center gap-2 font-semibold text-primary">
-                <CreditCard className="h-4 w-4" /> {t("result.paymentDetected")}
-              </div>
-              <div className="space-y-1 text-muted-foreground">
-                {parsed.data.payee && <div>{t("result.payee")}: {parsed.data.payee}</div>}
-                {parsed.data.amount && <div>{t("result.amount")}: {parsed.data.amount}</div>}
-                <div className="text-xs opacity-70">{parsed.data.scheme?.toUpperCase()}</div>
-              </div>
-            </div>
-            <Button onClick={openPayment} className="w-full" size="lg">
-              <CreditCard className="mr-2 h-4 w-4" /> {t("result.openPayment")}
-            </Button>
-          </div>
-        );
-      case "text":
-        return (
-          <div className="space-y-2">
-            {primaryAction === "translate" ? (
-              <>
-                <Button onClick={translateText} className="w-full" size="lg">
-                  <Languages className="mr-2 h-4 w-4" /> {t("result.translate")}
-                </Button>
-                <Button onClick={copy} className="w-full" size="lg" variant="secondary">
-                  <Copy className="mr-2 h-4 w-4" /> {t("common.copy")}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button onClick={copy} className="w-full" size="lg">
-                  <Copy className="mr-2 h-4 w-4" /> {t("common.copy")}
-                </Button>
-                <Button onClick={translateText} className="w-full" size="lg" variant="secondary">
-                  <Languages className="mr-2 h-4 w-4" /> {t("result.translate")}
-                </Button>
-              </>
-            )}
-          </div>
-        );
-      case "product":
-        return (
-          <Button
-            onClick={() => {
-              window.open(`https://www.google.com/search?q=${encodeURIComponent(parsed.data.code)}`, "_blank", "noopener,noreferrer");
-            }}
-            className="w-full"
-            size="lg"
-          >
-            <Search className="mr-2 h-4 w-4" />
-            {t("result.searchProduct", "Search Product")}
-          </Button>
-        );
-      default:
-        return null;
-    }
-  };
+  // Smart actions rendering logic has been extracted into a separate component.
 
   return (
     <>
@@ -520,8 +254,16 @@ export function ResultSheet({ scan, onClose }: Props) {
             </div>
           ) : (
             <div className="space-y-3">
-              {/* Primary smart action */}
-              {renderSmartActions()}
+              <SmartActions
+                scan={scan}
+                safety={safety}
+                primaryAction={primaryAction}
+                onCopy={copy}
+                onOpenUrl={openUrl}
+                onTranslateText={translateText}
+                onOpenPayment={openPayment}
+                recordAction={recordAction}
+              />
 
               {/* Quick actions row */}
               <div className="grid grid-cols-3 gap-2">
