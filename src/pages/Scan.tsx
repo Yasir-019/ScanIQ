@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { usePinchToZoom } from "@/hooks/use-pinch-to-zoom";
 import { CameraOverlay } from "@/components/CameraOverlay";
 import { telemetry } from "@/lib/telemetry";
+import { validateWebUrl } from "@/lib/scan/security";
 
 const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
 
@@ -99,7 +100,7 @@ export default function ScanScreen() {
         } catch { /* clipboard unavailable */ }
       }
 
-      if (parsed.type === "url" && settings.autoOpenUrls && safetyStatus === "safe") {
+      if (parsed.type === "url" && settings.autoOpenUrls && safetyStatus === "safe" && validateWebUrl(content)) {
         window.open(content, "_blank", "noopener,noreferrer");
         actionStats.record("open_url");
       }

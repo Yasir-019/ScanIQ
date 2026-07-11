@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { ScanRecord, SafetyStatus, ScanContentType } from "@/lib/scan/types";
 import { parseScanContent } from "@/lib/scan/parser";
+import { validateWebUrl, validatePaymentUrl } from "@/lib/scan/security";
 import { analyzeUrlSafety, type SafetyResult } from "@/lib/url-safety";
 import { useActionStats } from "@/lib/action-stats";
 import { toast } from "sonner";
@@ -153,6 +154,10 @@ export function ResultSheet({ scan, onClose }: Props) {
   };
 
   const openUrl = () => {
+    if (!validateWebUrl(scan.content)) {
+      toast.error(t("errors.invalidUrl", "Unsafe or invalid URL protocol blocked."));
+      return;
+    }
     if (safety.level === "malicious") {
       setConfirmOpen(true);
       return;
@@ -162,6 +167,10 @@ export function ResultSheet({ scan, onClose }: Props) {
   };
 
   const forceOpenUrl = () => {
+    if (!validateWebUrl(scan.content)) {
+      toast.error(t("errors.invalidUrl", "Unsafe or invalid URL protocol blocked."));
+      return;
+    }
     setConfirmOpen(false);
     recordAction("open_url");
     window.open(scan.content, "_blank", "noopener,noreferrer");
@@ -175,6 +184,10 @@ export function ResultSheet({ scan, onClose }: Props) {
   };
 
   const openPayment = () => {
+    if (!validatePaymentUrl(scan.content)) {
+      toast.error(t("errors.invalidPayment", "Unsafe or invalid payment protocol blocked."));
+      return;
+    }
     recordAction("open_payment");
     window.open(scan.content, "_blank", "noopener,noreferrer");
   };

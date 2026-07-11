@@ -9,8 +9,11 @@ export interface ParsedScan {
   display: string;
 }
 
+import { sanitizeInput } from "./security";
+
 export function parseScanContent(content: string, format: ScanFormat): ParsedScan {
-  const trimmed = content.trim();
+  const sanitized = sanitizeInput(content);
+  const trimmed = sanitized.trim();
 
   if (isBarcodeFormat(format) && /^\d+$/.test(trimmed)) {
     return { type: "product", data: { code: trimmed }, display: trimmed };
