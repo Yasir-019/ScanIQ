@@ -3,13 +3,6 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
 import en from "./locales/en.json";
-import zhCN from "./locales/zh-CN.json";
-import zhTW from "./locales/zh-TW.json";
-import hi from "./locales/hi.json";
-import ru from "./locales/ru.json";
-import ja from "./locales/ja.json";
-import ko from "./locales/ko.json";
-import ur from "./locales/ur.json";
 
 export type LanguageCode =
   | "en"
@@ -43,15 +36,47 @@ export const SUPPORTED_LANGUAGES: LanguageMeta[] = [
 
 const STORAGE_KEY = "scaniq-language";
 
+const localeLoaders: Record<LanguageCode, () => Promise<{ default: unknown }>> = {
+  en: () => Promise.resolve({ default: en }),
+  "zh-CN": () => import("./locales/zh-CN.json"),
+  "zh-TW": () => import("./locales/zh-TW.json"),
+  hi: () => import("./locales/hi.json"),
+  ru: () => import("./locales/ru.json"),
+  ja: () => import("./locales/ja.json"),
+  ko: () => import("./locales/ko.json"),
+  ur: () => import("./locales/ur.json"),
+};
+
+export async function loadLanguageResources(code: LanguageCode) {
+  if (i18n.hasResourceBundle(code, "translation")) return;
+  try {
+    const loader = localeLoaders[code];
+    if (loader) {
+      const module = await loader();
+      i18n.addResourceBundle(code, "translation", module.default, true, true);
+    }
+  } catch (e) {
+    console.error("[i18n] Failed to load language resource:", code, e);
+  }
+}
+
+// Read initial config from localStorage or fallback to system locale
+let initialLang: LanguageCode = "en";
+try {
+  const stored = localStorage.getItem(STORAGE_KEY) as LanguageCode | null;
+  if (stored && SUPPORTED_LANGUAGES.some((l) => l.code === stored)) {
+    initialLang = stored;
+  } else {
+    const navLang = navigator.language;
+    const matched = SUPPORTED_LANGUAGES.find((l) => navLang.startsWith(l.code))?.code;
+    if (matched) initialLang = matched;
+  }
+} catch {
+  /* ignore */
+}
+
 const resources = {
   en: { translation: en },
-  "zh-CN": { translation: zhCN },
-  "zh-TW": { translation: zhTW },
-  hi: { translation: hi },
-  ru: { translation: ru },
-  ja: { translation: ja },
-  ko: { translation: ko },
-  ur: { translation: ur },
 };
 
 i18n
@@ -60,6 +85,7 @@ i18n
   .init({
     resources,
     fallbackLng: "en",
+    lng: initialLang,
     supportedLngs: SUPPORTED_LANGUAGES.map((l) => l.code),
     load: "currentOnly",
     interpolation: { escapeValue: false },
@@ -71,7 +97,15 @@ i18n
     },
   });
 
-export function setAppLanguage(code: LanguageCode) {
+// Trigger dynamic loading of locale if not English
+if (initialLang !== "en") {
+  loadLanguageResources(initialLang).then(() => {
+    i18n.changeLanguage(initialLang);
+  }).catch(() => {});
+}
+
+export async function setAppLanguage(code: LanguageCode) {
+  await loadLanguageResources(code);
   i18n.changeLanguage(code);
   try {
     localStorage.setItem(STORAGE_KEY, code);

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Trash2, Star, Link as LinkIcon, Wifi, User, Mail, MessageSquare, Phone, MapPin, Package, FileText, CreditCard } from "lucide-react";
-import type { ScanRecord, ScanContentType, ScanFormat } from "@/lib/scan/types";
+import type { ScanRecord, ScanContentType } from "@/lib/scan/types";
 import { ResultSheet } from "@/components/ResultSheet";
 import { toast } from "sonner";
 import { useSettings } from "@/lib/settings";
@@ -86,8 +86,15 @@ export default function HistoryScreen() {
   const [mode, setMode] = useState<"scanned" | "generated">("scanned");
   const [active, setActive] = useState<ScanRecord | null>(null);
 
-  const all = useLiveQuery(() => db.scans.orderBy("scannedAt").reverse().toArray(), []);
-  const generatedCodes = useLiveQuery(() => db.generated.orderBy("createdAt").reverse().toArray(), []);
+  const all = useLiveQuery(() => {
+    if (mode !== "scanned") return Promise.resolve([]);
+    return db.scans.orderBy("scannedAt").reverse().toArray();
+  }, [mode]);
+
+  const generatedCodes = useLiveQuery(() => {
+    if (mode !== "generated") return Promise.resolve([]);
+    return db.generated.orderBy("createdAt").reverse().toArray();
+  }, [mode]);
 
   const filtered = useMemo(() => {
     let list = all ?? [];
@@ -98,6 +105,17 @@ export default function HistoryScreen() {
     }
     return list;
   }, [all, tab, query]);
+
+  const generatedScans = useMemo(() => {
+    if (!generatedCodes) return [];
+    return generatedCodes.map((g) => ({
+      id: g.id,
+      content: g.payload,
+      format: "QR_CODE" as ScanRecord["format"],
+      type: g.type,
+      scannedAt: g.createdAt,
+    }));
+  }, [generatedCodes]);
 
   const remove = useCallback(async (id: string) => {
     const item = await db.scans.get(id);
@@ -228,23 +246,14 @@ export default function HistoryScreen() {
         </ul>
       ) : (
         <ul className="space-y-2 px-4 pt-2">
-          {(!generatedCodes || generatedCodes.length === 0) && (
+          {(!generatedScans || generatedScans.length === 0) && (
             <li className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
               No generated QR codes yet. Create one in the Generate tab!
             </li>
           )}
-          {generatedCodes?.map((g) => {
-            const mockScan: ScanRecord = {
-              id: g.id,
-              content: g.payload,
-              format: "QR_CODE" as ScanFormat,
-              type: g.type,
-              scannedAt: g.createdAt,
-            };
-            return (
-              <HistoryItem key={g.id} scan={mockScan} onSelect={setActive} onDelete={removeGen} />
-            );
-          })}
+          {generatedScans.map((mockScan) => (
+            <HistoryItem key={mockScan.id} scan={mockScan} onSelect={setActive} onDelete={removeGen} />
+          ))}
         </ul>
       )}
 

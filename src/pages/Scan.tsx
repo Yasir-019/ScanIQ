@@ -188,14 +188,19 @@ export default function ScanScreen() {
   useEffect(() => {
     mountedRef.current = true;
 
-    startCamera();
+    if (result) {
+      getScannerService().stop();
+      setCameraState("loading");
+    } else {
+      startCamera();
+    }
 
     const onVisibility = () => {
       if (!mountedRef.current) return;
       if (document.hidden) {
         getScannerService().stop();
         setCameraState("loading");
-      } else {
+      } else if (!result) {
         startCamera();
       }
     };
@@ -204,10 +209,9 @@ export default function ScanScreen() {
     return () => {
       mountedRef.current = false;
       document.removeEventListener("visibilitychange", onVisibility);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
       getScannerService().stop();
     };
-  }, [startCamera, retryCount]);
+  }, [startCamera, retryCount, result]);
 
   const retryCamera = () => {
     setRetryCount((c) => c + 1);
