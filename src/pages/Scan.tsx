@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
-import { Flashlight, FlashlightOff, ImageUp, Keyboard, X, Camera, CameraOff, RotateCcw, AlertTriangle } from "lucide-react";
+import { Flashlight, FlashlightOff, ImageUp, Keyboard, X, Camera, CameraOff, RotateCcw, AlertTriangle, Settings } from "lucide-react";
 import { getScannerService, type ZoomCapabilities } from "@/lib/scanner-service";
 import { parseScanContent } from "@/lib/scan/parser";
 import { db, pruneFreeHistory } from "@/lib/db";
@@ -10,7 +10,7 @@ import { useSettings } from "@/lib/settings";
 import { useActionStats } from "@/lib/action-stats";
 import { ResultSheet } from "@/components/ResultSheet";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { scanFeedback } from "@/lib/feedback";
@@ -34,6 +34,8 @@ export default function ScanScreen() {
   const [zoom, setZoom] = useState(1);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualValue, setManualValue] = useState("");
+  const [manualError, setManualError] = useState("");
+  const [showPermissionGuide, setShowPermissionGuide] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
   // Pinch tracking refs
@@ -268,10 +270,28 @@ export default function ScanScreen() {
   };
 
   const submitManual = async () => {
-    if (!manualValue.trim()) return;
+    const val = manualValue.trim();
+    if (!val) {
+      setManualError(t("scan.manualErrorEmpty", "Code content cannot be empty."));
+      return;
+    }
+    if (val.length > 2048) {
+      setManualError(t("scan.manualErrorTooLong", "Content exceeds the 2048 character limit."));
+      return;
+    }
+    setManualError("");
     setManualOpen(false);
-    await handleResult(manualValue.trim(), "UNKNOWN");
+    await handleResult(val, "UNKNOWN");
     setManualValue("");
+  };
+
+  const handleManualValueChange = (val: string) => {
+    setManualValue(val);
+    if (val.length > 2048) {
+      setManualError(t("scan.manualErrorTooLong", "Content exceeds the 2048 character limit."));
+    } else {
+      setManualError("");
+    }
   };
 
   const renderCameraOverlay = () => {
@@ -322,11 +342,16 @@ export default function ScanScreen() {
           <p className="text-sm text-muted-foreground">{cfg.help}</p>
           <div className="flex flex-col items-center gap-2 pt-1">
             {cfg.showRetry && (
-              <Button onClick={retryCamera}>
+              <Button onClick={retryCamera} className="w-full">
                 <RotateCcw className="mr-2 h-4 w-4" /> {t("scan.retryCamera")}
               </Button>
             )}
-            <div className="flex gap-2 pt-2">
+            {cfg.showSettings && (
+              <Button onClick={() => setShowPermissionGuide(true)} variant="outline" className="w-full mt-1 border-destructive/20 text-destructive hover:bg-destructive/5">
+                <Settings className="mr-2 h-4 w-4" /> {t("scan.openSettings")}
+              </Button>
+            )}
+            <div className="flex gap-2 pt-2 justify-center">
               <Button
                 variant="secondary"
                 size="sm"
@@ -458,19 +483,72 @@ export default function ScanScreen() {
 
       <ResultSheet scan={result} onClose={() => setResult(null)} />
 
-      <Dialog open={manualOpen} onOpenChange={setManualOpen}>
-        <DialogContent>
+      <Dialog open={manualOpen} onOpenChange={(open) => { setManualOpen(open); if (!open) setManualError(""); }}>
+        <DialogContent className="max-w-xs rounded-3xl border border-border bg-card p-5 shadow-card">
           <DialogHeader>
-            <DialogTitle>{t("scan.manualTitle")}</DialogTitle>
+            <DialogTitle className="text-foreground">{t("scan.manualTitle")}</DialogTitle>
           </DialogHeader>
-          <Input
-            value={manualValue}
-            onChange={(e) => setManualValue(e.target.value)}
-            placeholder={t("scan.manualPlaceholder")}
-            onKeyDown={(e) => e.key === "Enter" && submitManual()}
-            autoFocus
-          />
-          <Button onClick={submitManual}>{t("scan.manualSubmit")}</Button>
+          <div className="space-y-2">
+            <Input
+              value={manualValue}
+              onChange={(e) => handleManualValueChange(e.target.value)}
+              placeholder={t("scan.manualPlaceholder")}
+              onKeyDown={(e) => e.key === "Enter" && submitManual()}
+              autoFocus
+              className="rounded-2xl"
+            />
+            {manualError && (
+              <p className="text-[11px] text-destructive pl-1 animate-pulse">{manualError}</p>
+            )}
+            <p className="text-[10px] text-muted-foreground text-right pr-1">
+              {manualValue.length} / 2048
+            </p>
+          </div>
+          <Button onClick={submitManual} className="rounded-2xl h-11">{t("scan.manualSubmit")}</Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPermissionGuide} onOpenChange={setShowPermissionGuide}>
+        <DialogContent className="max-w-xs rounded-3xl border border-border bg-card p-5 text-center shadow-lg">
+          <DialogHeader className="items-center">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Settings className="h-7 w-7" />
+            </div>
+            <DialogTitle className="text-lg text-foreground">Camera Permissions</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              How to enable camera access for ScanIQ:
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="text-left text-xs text-muted-foreground space-y-3 my-2 max-h-60 overflow-y-auto pr-1">
+            <div>
+              <strong className="text-foreground">🌐 Mobile Browsers (Chrome/Safari):</strong>
+              <ol className="list-decimal list-inside space-y-1 mt-1 pl-1 text-[11px]">
+                <li>Tap the lock icon 🔒 (or site settings menu) next to the web address bar.</li>
+                <li>Tap <strong className="text-foreground">Site Settings</strong> or Permissions.</li>
+                <li>Toggle Camera permission to <strong className="text-foreground">Allow</strong>.</li>
+                <li>Refresh this webpage.</li>
+              </ol>
+            </div>
+            <div>
+              <strong className="text-foreground">📱 Android Installed App (TWA):</strong>
+              <ol className="list-decimal list-inside space-y-1 mt-1 pl-1 text-[11px]">
+                <li>Open your Android phone <strong className="text-foreground">Settings &gt; Apps</strong>.</li>
+                <li>Select <strong className="text-foreground">ScanIQ</strong> in your application list.</li>
+                <li>Tap <strong className="text-foreground">Permissions</strong> &gt; Toggle <strong className="text-foreground">Camera</strong> on.</li>
+              </ol>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => {
+              setShowPermissionGuide(false);
+              retryCamera();
+            }}
+            className="w-full h-11 rounded-2xl text-xs"
+          >
+            I've Enabled It (Retry Camera)
+          </Button>
         </DialogContent>
       </Dialog>
     </div>

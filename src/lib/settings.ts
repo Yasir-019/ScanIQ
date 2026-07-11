@@ -9,6 +9,7 @@ export interface AppSettings {
   autoCopyText: boolean;
   autoConnectWifi: boolean;
   theme: "dark" | "light";
+  isPro: boolean;
 }
 
 interface SettingsState extends AppSettings {
@@ -26,6 +27,7 @@ export const useSettings = create<SettingsState>()(
       autoCopyText: false,
       autoConnectWifi: false,
       theme: "dark",
+      isPro: false,
       set: (patch) => set(patch),
       completeOnboarding: () => set({ onboarded: true }),
     }),

@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, Share2, Link as LinkIcon, FileText, Wifi, User, Mail, MessageSquare, Phone } from "lucide-react";
 import { toast } from "sonner";
+import { db } from "@/lib/db";
+import { useSettings } from "@/lib/settings";
 
 type GenType = "url" | "text" | "wifi" | "vcard" | "email" | "sms" | "phone";
 
@@ -42,9 +44,12 @@ function buildPayload(type: GenType, f: Record<string, string>): string {
 
 export default function GenerateScreen() {
   const { t } = useTranslation();
+  const isPro = useSettings((s) => s.isPro);
   const [type, setType] = useState<GenType>("url");
   const [fields, setFields] = useState<Record<string, string>>({ url: "https://" });
   const [dataUrl, setDataUrl] = useState<string>("");
+  const [fgColor, setFgColor] = useState("#0f172a");
+  const [bgColor, setBgColor] = useState("#ffffff");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const payload = useMemo(() => buildPayload(type, fields), [type, fields]);
@@ -58,7 +63,10 @@ export default function GenerateScreen() {
     QRCode.toDataURL(payload, {
       margin: 2,
       width: 512,
-      color: { dark: "#0f172a", light: "#ffffff" },
+      color: {
+        dark: isPro ? fgColor : "#0f172a",
+        light: isPro ? bgColor : "#ffffff",
+      },
       errorCorrectionLevel: "M",
     })
       .then((url) => {
@@ -68,7 +76,7 @@ export default function GenerateScreen() {
     return () => {
       cancelled = true;
     };
-  }, [payload]);
+  }, [payload, isPro, fgColor, bgColor]);
 
   const onTypeChange = (v: GenType) => {
     setType(v);
@@ -86,8 +94,24 @@ export default function GenerateScreen() {
 
   const update = (k: string, v: string) => setFields((p) => ({ ...p, [k]: v }));
 
+  const saveGeneratedToDB = async () => {
+    try {
+      const record = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        type,
+        payload,
+        createdAt: Date.now(),
+        style: isPro ? { fg: fgColor, bg: bgColor } : undefined,
+      };
+      await db.generated.put(record);
+    } catch (e) {
+      console.error("Failed to save generated QR code:", e);
+    }
+  };
+
   const download = () => {
     if (!dataUrl) return;
+    saveGeneratedToDB();
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = `qrcode-${Date.now()}.png`;
@@ -97,6 +121,7 @@ export default function GenerateScreen() {
 
   const share = async () => {
     if (!dataUrl) return;
+    saveGeneratedToDB();
     try {
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], "qrcode.png", { type: "image/png" });
@@ -186,6 +211,38 @@ export default function GenerateScreen() {
           </>
         )}
         {type === "phone" && <Field label={t("generate.fields.phoneNumber")} value={fields.number || ""} onChange={(v) => update("number", v)} />}
+
+        {isPro && (
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+            <div className="text-sm font-semibold text-primary">Custom QR Colors (Pro Unlocked)</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Foreground Color</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    className="h-9 w-12 cursor-pointer rounded border bg-transparent"
+                  />
+                  <span className="text-xs font-mono">{fgColor}</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Background Color</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="h-9 w-12 cursor-pointer rounded border bg-transparent"
+                  />
+                  <span className="text-xs font-mono">{bgColor}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-2 pt-2">
           <Button onClick={download} disabled={!dataUrl} size="lg">

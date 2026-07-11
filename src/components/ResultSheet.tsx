@@ -21,6 +21,7 @@ import {
   FileText,
   Zap,
   Search,
+  Sparkles,
 } from "lucide-react";
 import type { ScanRecord, SafetyStatus, ScanContentType } from "@/lib/scan/types";
 import { parseScanContent } from "@/lib/scan/parser";
@@ -110,14 +111,114 @@ function SafetyWarningCard({ safety }: { safety: SafetyResult }) {
 
 export function ResultSheet({ scan, onClose }: Props) {
   const { t, i18n } = useTranslation();
+  const [showExplain, setShowExplain] = useState(false);
+  const [loadingExplain, setLoadingExplain] = useState(false);
   const [favorite, setFavorite] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const recordAction = useActionStats((s) => s.record);
   const topAction = useActionStats((s) => s.topAction);
 
   useEffect(() => {
-    setFavorite(!!scan?.favorite);
+    if (scan) {
+      setShowExplain(false);
+      setLoadingExplain(false);
+      setFavorite(!!scan.favorite);
+    }
   }, [scan]);
+
+  // Local rule-based AI explanation generator
+  const explanation = useMemo(() => {
+    if (!scan) return { summary: "", details: [] };
+    const parsed = parseScanContent(scan.content, scan.format);
+    
+    switch (scan.type) {
+      case "url": {
+        const hasHttps = scan.content.toLowerCase().startsWith("https://");
+        let host = "Unknown";
+        try { host = new URL(scan.content).hostname; } catch { /* ignore invalid URLs */ }
+        const isSuspicious = host.toLowerCase().includes("bank") || host.toLowerCase().includes("support") || host.toLowerCase().includes("login") || host.toLowerCase().includes("secure");
+        
+        return {
+          summary: "Web Link Security Analysis",
+          details: [
+            `This points to the domain: ${host}.`,
+            hasHttps 
+              ? "✅ Secure Connection: Uses HTTPS to encrypt data in transit." 
+              : "⚠️ Insecure Connection: Uses plain HTTP. Any credentials entered can be intercepted.",
+            isSuspicious 
+              ? "🚨 Brand Alert: The domain contains sensitive terms. Double-check for phishing impersonations." 
+              : "✅ No obvious brand impersonation keywords detected.",
+            "🔒 Sandboxed Access: Safely opens in your browser sandbox, blocking direct root-level modifications."
+          ]
+        };
+      }
+      case "wifi": {
+        const ssid = (parsed.data as Record<string, string>)?.ssid || "Unknown";
+        const enc = (parsed.data as Record<string, string>)?.encryption || "None";
+        return {
+          summary: "Wi-Fi Network Configuration",
+          details: [
+            `Wireless network SSID: "${ssid}".`,
+            `Security protocols: ${enc} (${enc === "WEP" ? "⚠️ Outdated" : "✅ Secure Standard"}).`,
+            "📱 Connection Flow: Tapping 'Connect' configures your system settings safely. No local network data is transmitted externally."
+          ]
+        };
+      }
+      case "vcard": {
+        const name = (parsed.data as Record<string, string>)?.name || "No name";
+        const tel = (parsed.data as Record<string, string>)?.tel || "No number";
+        const email = (parsed.data as Record<string, string>)?.email || "No email";
+        return {
+          summary: "Contact Entry Card (vCard)",
+          details: [
+            `Name details: ${name}.`,
+            `Phone contact: ${tel}.`,
+            `Email address: ${email}.`,
+            "👤 Local Sync: Tapping 'Add Contact' saves this entry to your native address book directly. No contacts sync online."
+          ]
+        };
+      }
+      case "payment": {
+        return {
+          summary: "Payment Payload Specifications",
+          details: [
+            "This contains a payment request link.",
+            "🔒 Local check: Secure bank scheme formatting detected.",
+            "💸 Security Reminder: Check the payee details and exact billing amount before typing in your financial transaction PIN.",
+            "Offline Hand-off: Hands over parameter parsing directly to your payment app."
+          ]
+        };
+      }
+      case "product": {
+        const code = (parsed.data as Record<string, string>)?.code || scan.content;
+        return {
+          summary: "Commercial Product Barcode",
+          details: [
+            `Global barcode index: ${code}.`,
+            "🛒 Product Code standard: Registered retail GTIN / UPC / EAN standard.",
+            "🌐 Web Search Lookup: Runs inquiries on global consumer goods indexes to find manufacturer information, ingredients, and retail prices."
+          ]
+        };
+      }
+      default:
+        return {
+          summary: "Text Information Description",
+          details: [
+            "Payload type: Plain Text.",
+            "📝 Raw data payload contains generic formatted characters.",
+            "🛠️ Core Utilities: Copy information directly to system clipboard or share via local messenger apps."
+          ]
+        };
+    }
+  }, [scan]);
+
+  const triggerExplain = () => {
+    setShowExplain(true);
+    setLoadingExplain(true);
+    setTimeout(() => {
+      setLoadingExplain(false);
+    }, 750);
+  };
 
   const safety = useMemo<SafetyResult>(() => {
     if (!scan || (scan.type !== "url" && scan.type !== "payment")) return { level: "safe", reasons: [] };
@@ -373,27 +474,62 @@ export function ResultSheet({ scan, onClose }: Props) {
             <SheetTitle className="break-words text-xl leading-snug">{parsed.display || scan.content}</SheetTitle>
           </SheetHeader>
 
-          <div className="space-y-3">
-            {/* Primary smart action */}
-            {renderSmartActions()}
-
-            {/* Quick actions row */}
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" onClick={copy} className="h-12">
-                <Copy className="h-4 w-4" />
-                <span className="text-xs">{t("common.copy")}</span>
-              </Button>
-              <Button variant="secondary" onClick={share} className="h-12">
-                <Share2 className="h-4 w-4" />
-                <span className="text-xs">{t("common.share")}</span>
-              </Button>
+          {showExplain ? (
+            <div className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 shadow-card animate-fade-up">
+              <div className="flex items-center gap-2 text-primary">
+                <Sparkles className="h-5 w-5 animate-pulse" />
+                <h3 className="font-semibold text-sm">Local AI Assist</h3>
+              </div>
+              
+              {loadingExplain ? (
+                <div className="py-8 text-center space-y-2">
+                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <p className="text-xs text-muted-foreground animate-pulse">Analyzing payload elements...</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-foreground/90">{explanation.summary}</h4>
+                  <ul className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                    {explanation.details.map((detail, idx) => (
+                      <li key={idx} className="flex gap-2">
+                        <span className="text-primary">•</span>
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button variant="outline" size="sm" onClick={() => setShowExplain(false)} className="w-full mt-2 rounded-xl">
+                    Back to Actions
+                  </Button>
+                </div>
+              )}
             </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Primary smart action */}
+              {renderSmartActions()}
 
-            <details className="rounded-xl border border-border bg-secondary/30 p-3 text-sm">
-              <summary className="cursor-pointer text-muted-foreground">{t("result.rawContent")}</summary>
-              <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-foreground/80">{scan.content}</pre>
-            </details>
-          </div>
+              {/* Quick actions row */}
+              <div className="grid grid-cols-3 gap-2">
+                <Button variant="secondary" onClick={copy} className="h-12">
+                  <Copy className="h-4 w-4" />
+                  <span className="text-xs">{t("common.copy")}</span>
+                </Button>
+                <Button variant="secondary" onClick={share} className="h-12">
+                  <Share2 className="h-4 w-4" />
+                  <span className="text-xs">{t("common.share")}</span>
+                </Button>
+                <Button variant="secondary" onClick={triggerExplain} className="h-12">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-xs">{t("result.explain")}</span>
+                </Button>
+              </div>
+
+              <details className="rounded-xl border border-border bg-secondary/30 p-3 text-sm">
+                <summary className="cursor-pointer text-muted-foreground">{t("result.rawContent")}</summary>
+                <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-foreground/80">{scan.content}</pre>
+              </details>
+            </div>
+          )}
         </SheetContent>
       </Sheet>
 

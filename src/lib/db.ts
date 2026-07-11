@@ -1,5 +1,6 @@
 import Dexie, { type Table } from "dexie";
 import type { GeneratedCode, ScanRecord } from "./scan/types";
+import { useSettings } from "./settings";
 
 export class ScanIQDB extends Dexie {
   scans!: Table<ScanRecord, string>;
@@ -19,6 +20,9 @@ export const db = new ScanIQDB();
 export const FREE_HISTORY_LIMIT = 50;
 
 export async function pruneFreeHistory(limit = FREE_HISTORY_LIMIT) {
+  const isPro = useSettings.getState().isPro;
+  if (isPro) return 0;
+
   const count = await db.scans.count();
   if (count <= limit) return 0;
   const overflow = count - limit;
