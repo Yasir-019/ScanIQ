@@ -17,6 +17,7 @@ import { scanFeedback } from "@/lib/feedback";
 import { toast } from "sonner";
 import { usePinchToZoom } from "@/hooks/use-pinch-to-zoom";
 import { CameraOverlay } from "@/components/CameraOverlay";
+import { telemetry } from "@/lib/telemetry";
 
 const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
 
@@ -62,6 +63,7 @@ export default function ScanScreen() {
 
     try {
       const parsed = parseScanContent(content, format);
+      telemetry.trackEvent("scan_completed", { format, type: parsed.type });
       const safetyStatus = parsed.type === "url" ? analyzeUrlSafety(content).level : undefined;
       const record: ScanRecord = {
         id: newId(),
@@ -165,6 +167,7 @@ export default function ScanScreen() {
       if (!mountedRef.current) return;
       const msg = e instanceof Error ? e.message : String(e);
       console.error("[ScanScreen] Camera start error:", msg);
+      telemetry.trackEvent("camera_failed", { error: msg });
 
       if (/permission|denied|NotAllowed/i.test(msg)) {
         try {

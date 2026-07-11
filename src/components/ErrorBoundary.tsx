@@ -3,6 +3,8 @@ import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import i18n from "@/lib/i18n";
 
+import { telemetry } from "@/lib/telemetry";
+
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -22,6 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("[ErrorBoundary]", error, info.componentStack);
+    telemetry.trackCrash(error, info.componentStack || undefined);
   }
 
   handleReset = () => {

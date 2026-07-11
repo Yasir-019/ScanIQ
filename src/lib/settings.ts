@@ -10,6 +10,7 @@ export interface AppSettings {
   autoConnectWifi: boolean;
   theme: "dark" | "light";
   isPro: boolean;
+  telemetryEnabled: boolean;
 }
 
 interface SettingsState extends AppSettings {
@@ -28,6 +29,7 @@ export const useSettings = create<SettingsState>()(
       autoConnectWifi: false,
       theme: "dark",
       isPro: false,
+      telemetryEnabled: true,
       set: (patch) => set(patch),
       completeOnboarding: () => set({ onboarded: true }),
     }),

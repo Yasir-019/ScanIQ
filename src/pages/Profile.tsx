@@ -108,6 +108,11 @@ export default function ProfileScreen() {
           label={t("profile.vibrate")}
           control={<Switch checked={settings.vibrate} onCheckedChange={(v) => settings.set({ vibrate: v })} />}
         />
+        <SettingRow
+          icon={Shield}
+          label={t("profile.telemetry", "Send Diagnostic Reports")}
+          control={<Switch checked={settings.telemetryEnabled} onCheckedChange={(v) => settings.set({ telemetryEnabled: v })} />}
+        />
         <Link
           to="/language"
           className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 transition hover:bg-secondary"

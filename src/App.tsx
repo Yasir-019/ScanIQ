@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +9,7 @@ import { useSettings } from "@/lib/settings";
 import AppShell from "@/components/AppShell";
 import ScanScreen from "./pages/Scan";
 import NotFound from "./pages/NotFound.tsx";
+import { telemetry } from "@/lib/telemetry";
 
 // Lazy-loaded routes — code-split for faster initial load
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -28,6 +29,10 @@ const PageFallback = () => (
 
 const App = () => {
   const onboarded = useSettings((s) => s.onboarded);
+
+  useEffect(() => {
+    telemetry.trackEvent("app_launch", { onboarded });
+  }, [onboarded]);
 
   return (
     <ErrorBoundary>

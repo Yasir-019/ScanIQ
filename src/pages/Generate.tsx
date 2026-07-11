@@ -10,6 +10,7 @@ import { Download, Share2, Link as LinkIcon, FileText, Wifi, User, Mail, Message
 import { toast } from "sonner";
 import { db } from "@/lib/db";
 import { useSettings } from "@/lib/settings";
+import { telemetry } from "@/lib/telemetry";
 
 type GenType = "url" | "text" | "wifi" | "vcard" | "email" | "sms" | "phone";
 
@@ -103,6 +104,7 @@ export default function GenerateScreen() {
         style: isPro ? { fg: fgColor, bg: bgColor } : undefined,
       };
       await db.generated.put(record);
+      telemetry.trackEvent("qr_generated", { type });
     } catch (e) {
       console.error("Failed to save generated QR code:", e);
     }
