@@ -105,8 +105,9 @@ async function cacheFirst(request) {
     }
     return response;
   } catch (error) {
-    // Return offline page for navigation, empty response otherwise
     if (request.mode === "navigate") {
+      const offlineShell = await caches.match("/index.html");
+      if (offlineShell) return offlineShell;
       return getOfflineResponse();
     }
     return new Response("Offline", { status: 503, statusText: "Service Unavailable" });
@@ -123,6 +124,10 @@ async function networkFirst(request) {
     }
     return response;
   } catch (error) {
+    if (request.mode === "navigate") {
+      const offlineShell = await caches.match("/index.html");
+      if (offlineShell) return offlineShell;
+    }
     const cached = await caches.match(request);
     if (cached) {
       return cached;
