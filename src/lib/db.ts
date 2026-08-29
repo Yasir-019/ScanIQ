@@ -1,6 +1,5 @@
 import Dexie, { type Table } from "dexie";
 import type { GeneratedCode, ScanRecord } from "./scan/types";
-import { useSettings } from "./settings";
 
 export class ScanIQDB extends Dexie {
   scans!: Table<ScanRecord, string>;
@@ -17,16 +16,16 @@ export class ScanIQDB extends Dexie {
 
 export const db = new ScanIQDB();
 
-export const FREE_HISTORY_LIMIT = 50;
-
-export async function pruneFreeHistory(limit = FREE_HISTORY_LIMIT) {
-  const isPro = useSettings.getState().isPro;
-  if (isPro) return 0;
-
+/**
+ * Case history is unlimited and local-only — there is no paid tier.
+ * This helper exists for user-initiated retention cleanup only.
+ */
+export async function pruneHistory(limit: number) {
+  if (!Number.isFinite(limit) || limit <= 0) return 0;
   const count = await db.scans.count();
   if (count <= limit) return 0;
+
   const overflow = count - limit;
-  // Order by scannedAt asc and delete non-favorites
   const ids: string[] = [];
   const all = await db.scans.orderBy("scannedAt").toArray();
   for (const s of all) {

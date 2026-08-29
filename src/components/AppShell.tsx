@@ -1,14 +1,13 @@
 import { memo, useMemo } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { ScanLine, History as HistoryIcon, QrCode, User } from "lucide-react";
+import { ScanLine, FolderSearch, Settings as SettingsIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 const tabConfig = [
   { to: "/", labelKey: "nav.scan", icon: ScanLine, end: true },
-  { to: "/history", labelKey: "nav.history", icon: HistoryIcon },
-  { to: "/generate", labelKey: "nav.generate", icon: QrCode },
-  { to: "/profile", labelKey: "nav.profile", icon: User },
+  { to: "/history", labelKey: "nav.cases", icon: FolderSearch },
+  { to: "/profile", labelKey: "nav.settings", icon: SettingsIcon },
 ];
 
 const AppShell = memo(function AppShell() {

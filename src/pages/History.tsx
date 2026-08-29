@@ -9,7 +9,6 @@ import { Search, Trash2, Star, Link as LinkIcon, Wifi, User, Mail, MessageSquare
 import type { ScanRecord, ScanContentType } from "@/lib/scan/types";
 import { ResultSheet } from "@/components/ResultSheet";
 import { toast } from "sonner";
-import { useSettings } from "@/lib/settings";
 
 const typeIcon: Record<ScanContentType, React.ComponentType<{ className?: string }>> = {
   url: LinkIcon,
@@ -80,7 +79,6 @@ const HistoryItem = memo(function HistoryItem({
 
 export default function HistoryScreen() {
   const { t } = useTranslation();
-  const isPro = useSettings((s) => s.isPro);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"all" | "favorites">("all");
   const [mode, setMode] = useState<"scanned" | "generated">("scanned");
@@ -191,9 +189,9 @@ export default function HistoryScreen() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">{t("history.title")}</h1>
           <div className="flex gap-2">
-            {isPro && mode === "scanned" && (all?.length ?? 0) > 0 && (
+            {mode === "scanned" && (all?.length ?? 0) > 0 && (
               <Button variant="ghost" size="sm" onClick={exportCSV} className="text-primary hover:text-primary/80">
-                Export CSV
+                Export evidence (CSV)
               </Button>
             )}
             {((mode === "scanned" && (all?.length ?? 0) > 0) || (mode === "generated" && (generatedCodes?.length ?? 0) > 0)) && (
@@ -206,8 +204,8 @@ export default function HistoryScreen() {
 
         <Tabs value={mode} onValueChange={(v) => setMode(v as "scanned" | "generated")} className="w-full">
           <TabsList className="grid w-full grid-cols-2 rounded-2xl">
-            <TabsTrigger value="scanned" className="rounded-xl">Scanned</TabsTrigger>
-            <TabsTrigger value="generated" className="rounded-xl">Generated</TabsTrigger>
+            <TabsTrigger value="scanned" className="rounded-xl">{t("history.tabCases", "Cases")}</TabsTrigger>
+            <TabsTrigger value="generated" className="rounded-xl">{t("history.tabArchived", "Archived")}</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -248,7 +246,7 @@ export default function HistoryScreen() {
         <ul className="space-y-2 px-4 pt-2">
           {(!generatedScans || generatedScans.length === 0) && (
             <li className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              No generated QR codes yet. Create one in the Generate tab!
+              No archived codes.
             </li>
           )}
           {generatedScans.map((mockScan) => (

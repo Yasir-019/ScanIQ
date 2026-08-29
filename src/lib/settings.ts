@@ -5,12 +5,15 @@ export interface AppSettings {
   onboarded: boolean;
   sound: boolean;
   vibrate: boolean;
+  /** Opt-in automations. All default to off: nothing acts on an untrusted code. */
   autoOpenUrls: boolean;
   autoCopyText: boolean;
   autoConnectWifi: boolean;
   theme: "dark" | "light";
-  isPro: boolean;
+  /** Diagnostics are off by default — privacy-first. */
   telemetryEnabled: boolean;
+  /** Allow opt-in online enrichment providers (none enabled by default). */
+  onlineEnrichment: boolean;
 }
 
 interface SettingsState extends AppSettings {
@@ -28,8 +31,8 @@ export const useSettings = create<SettingsState>()(
       autoCopyText: false,
       autoConnectWifi: false,
       theme: "dark",
-      isPro: false,
-      telemetryEnabled: true,
+      telemetryEnabled: false,
+      onlineEnrichment: false,
       set: (patch) => set(patch),
       completeOnboarding: () => set({ onboarded: true }),
     }),

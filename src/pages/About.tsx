@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Info, Cpu, ShieldCheck } from "lucide-react";
-import { APP_NAME, APP_TAGLINE } from "@/lib/app-meta";
+import { ArrowLeft, Info, Cpu, ShieldCheck, Users, Scale } from "lucide-react";
+import { APP_NAME, APP_TAGLINE, APP_VERSION, APP_LICENSE, APP_REPO_URL } from "@/lib/app-meta";
 
 export default function AboutScreen() {
   const { t } = useTranslation();
@@ -10,18 +10,28 @@ export default function AboutScreen() {
   const sections = [
     {
       icon: Info,
-      title: "App Description",
-      body: `${APP_NAME} is a fast, smart QR and Barcode utility designed for daily tasks. It features zero advertising, a clean local-first storage architecture, and automated smart actions to streamline workflows.`,
+      title: "What this is",
+      body: `${APP_NAME} is a free, open-source QR and barcode OSINT toolkit. It treats every scanned code as untrusted input: instead of instantly acting on a payload, it decomposes it, analyzes it, and reports what it found.`,
+    },
+    {
+      icon: Users,
+      title: "Who it's for",
+      body: "Privacy-conscious users, cybersecurity students, OSINT researchers, and security professionals who need to inspect a code before trusting it — in the field, on a phone, without a backend.",
     },
     {
       icon: Cpu,
-      title: "Core Technology",
-      body: "Built on high-performance progressive web standards with robust browser scanning utilities, ScanIQ leverages local multi-format recognition engines to scan codes instantly.",
+      title: "How analysis works",
+      body: "A registry of pure, offline analyzers inspects transport, identity, obfuscation, infrastructure, payload, credential, and privacy signals. Each finding carries evidence and a rationale, and contributes a documented weight to the risk score.",
     },
     {
       icon: ShieldCheck,
-      title: "Privacy Commitment",
-      body: "Your safety and privacy are our top priorities. ScanIQ does not gather analytics, track your location, or upload your scan history. All operations occur directly on your device.",
+      title: "Privacy model",
+      body: "No accounts, no cloud, no analytics by default. Scans and case history stay in local IndexedDB. Any online enrichment is opt-in and discloses exactly what would leave your device.",
+    },
+    {
+      icon: Scale,
+      title: "Open source",
+      body: `${APP_LICENSE} licensed and auditable. Findings and scoring logic live in the repository so anyone can verify, challenge, or extend them: ${APP_REPO_URL}`,
     },
   ];
 
@@ -32,7 +42,9 @@ export default function AboutScreen() {
       </button>
 
       <h1 className="mb-1 text-2xl font-bold tracking-tight">About {APP_NAME}</h1>
-      <p className="mb-6 text-sm text-muted-foreground">Version 1.0.0 · {APP_TAGLINE}</p>
+      <p className="mb-6 text-sm text-muted-foreground">
+        Version {APP_VERSION} · {APP_TAGLINE}
+      </p>
 
       <div className="space-y-4">
         {sections.map(({ icon: Icon, title, body }) => (
@@ -43,7 +55,7 @@ export default function AboutScreen() {
               </div>
               <h2 className="font-semibold">{title}</h2>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
           </div>
         ))}
       </div>
