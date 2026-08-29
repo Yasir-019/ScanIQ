@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Flashlight, FlashlightOff, ImageUp, Keyboard, Camera, Settings } from "lucide-react";
 import { getScannerService, type ZoomCapabilities } from "@/lib/scanner-service";
 import { parseScanContent } from "@/lib/scan/parser";
-import { db, pruneFreeHistory } from "@/lib/db";
+import { db } from "@/lib/db";
 import type { ScanRecord } from "@/lib/scan/types";
 import { analyzeUrlSafety } from "@/lib/url-safety";
 import { useSettings } from "@/lib/settings";
@@ -77,7 +77,6 @@ export default function ScanScreen() {
       };
       scanFeedback();
       await db.scans.put(record);
-      pruneFreeHistory().catch(() => undefined);
       setResult(record);
 
       // Auto-actions based on settings
@@ -162,7 +161,6 @@ export default function ScanScreen() {
         setTorchAvail(svc.isTorchAvailable());
         const caps = svc.getZoomCapabilities();
         setZoomCaps(caps);
-        if (caps) setZoom(caps.min);
       }, 600);
     } catch (e) {
       if (!mountedRef.current) return;
