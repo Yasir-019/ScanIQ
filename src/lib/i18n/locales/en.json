@@ -4,11 +4,17 @@
     "tagline": "Scan safely. Investigate thoroughly. Understand everything."
   },
   "nav": {
-    "primary": "Primary Navigation",
+    "primary": "Primary",
+    "utility": "Utility",
     "scan": "Scan",
     "cases": "Cases",
     "sources": "Sources",
-    "settings": "Settings"
+    "integrations": "Integrations",
+    "reports": "Reports",
+    "settings": "Settings",
+    "about": "About",
+    "collapse": "Collapse Sidebar",
+    "expand": "Expand Sidebar"
   },
   "common": {
     "cancel": "Cancel",

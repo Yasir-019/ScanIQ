@@ -14,6 +14,8 @@ import { telemetry } from "@/lib/telemetry";
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CasesScreen = lazy(() => import("./pages/Cases"));
 const SourcesScreen = lazy(() => import("./pages/Sources"));
+const IntegrationsScreen = lazy(() => import("./pages/Integrations"));
+const ReportsScreen = lazy(() => import("./pages/Reports"));
 const PrivacySettingsScreen = lazy(() => import("./pages/PrivacySettings"));
 const InvestigationScreen = lazy(() => import("./pages/Investigation"));
 const LanguageScreen = lazy(() => import("./pages/Language"));
@@ -69,7 +71,31 @@ const App = () => {
                   }
                 />
                 <Route
+                  path="/integrations"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <IntegrationsScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/reports"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ReportsScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
                   path="/privacy-settings"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PrivacySettingsScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/settings"
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <PrivacySettingsScreen />
