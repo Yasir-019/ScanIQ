@@ -11,7 +11,7 @@ export class ScanIQDB extends Dexie {
     this.version(2)
       .stores({
         scans: "id, scannedAt, type, format, favorite, content, investigationId, caseId",
-        cases: "id, createdAt, updatedAt, starred, latestRiskLevel",
+        cases: "id, createdAt, updatedAt, starred, status, latestRiskLevel",
         investigations: "id, caseId, createdAt, updatedAt, status, sourceScanId",
       })
       .upgrade(async (tx) => {
@@ -27,6 +27,7 @@ export class ScanIQDB extends Dexie {
               createdAt: Date.now(),
               updatedAt: Date.now(),
               starred: false,
+              status: "active",
             });
             for (const s of scans) {
               if (!s.caseId) {
@@ -66,12 +67,46 @@ export async function saveNewCaseForScan(scan: ScanRecord): Promise<Investigatio
   const caseId = `case-${crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)}`;
   const c: InvestigationCase = {
     id: caseId,
+    label: scan.content ? (scan.content.length > 40 ? `${scan.content.slice(0, 37)}…` : scan.content) : undefined,
     createdAt: Date.now(),
     updatedAt: Date.now(),
     starred: false,
+    status: "active",
+    primaryTarget: scan.content,
+    targetCount: 1,
     notes: "",
   };
   await db.cases.put(c);
   await db.scans.put({ ...scan, caseId });
   return c;
+}
+
+export async function createNewCase(
+  label?: string,
+  tags?: string[],
+  notes?: string
+): Promise<InvestigationCase> {
+  const caseId = `case-${crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)}`;
+  const c: InvestigationCase = {
+    id: caseId,
+    label: label || `Case #${caseId.slice(-6)}`,
+    tags: tags || [],
+    notes: notes || "",
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    starred: false,
+    status: "active",
+    targetCount: 0,
+    indicatorCount: 0,
+  };
+  await db.cases.put(c);
+  return c;
+}
+
+export async function deleteCaseWithCascade(caseId: string): Promise<void> {
+  await Promise.all([
+    db.cases.delete(caseId),
+    db.scans.where("caseId").equals(caseId).delete(),
+    db.investigations.where("caseId").equals(caseId).delete(),
+  ]);
 }

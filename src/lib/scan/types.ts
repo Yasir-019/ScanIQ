@@ -272,6 +272,8 @@ export interface ScanRecord {
   caseId?: string;
 }
 
+export type CaseStatus = "active" | "archived" | "closed";
+
 export interface InvestigationCase {
   id: string;
   label?: string;
@@ -280,6 +282,10 @@ export interface InvestigationCase {
   createdAt: number;
   updatedAt: number;
   starred?: boolean;
+  status?: CaseStatus;
+  primaryTarget?: string;
+  targetCount?: number;
+  indicatorCount?: number;
   latestRiskLevel?: RiskLevel;
   latestInvestigationId?: string;
 }
