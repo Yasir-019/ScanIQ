@@ -24,7 +24,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-gradient-dark px-6 pb-10 pt-16 text-foreground">
+    <div className="flex h-full min-h-[90vh] flex-col justify-between max-w-md mx-auto px-6 pb-10 pt-16 text-foreground">
       <div className="flex flex-1 flex-col items-center justify-center text-center">
         <AnimatePresence mode="wait">
           <motion.div

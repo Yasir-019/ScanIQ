@@ -42,13 +42,13 @@
     --input: 220 13% 88%;
     --ring: 160 84% 39%;
 
-    --radius: 1rem;
+    --radius: 0.875rem;
 
     --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%), hsl(180 84% 45%));
     --gradient-hero: linear-gradient(160deg, hsl(160 84% 39%) 0%, hsl(200 84% 50%) 100%);
     --gradient-dark: linear-gradient(180deg, hsl(222 47% 8%) 0%, hsl(222 47% 4%) 100%);
-    --shadow-elegant: 0 10px 40px -10px hsl(160 84% 39% / 0.35);
-    --shadow-card: 0 4px 24px -8px hsl(222 47% 4% / 0.15);
+    --shadow-elegant: 0 10px 40px -10px hsl(160 84% 39% / 0.25);
+    --shadow-card: 0 4px 20px -8px hsl(222 47% 4% / 0.1);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -61,23 +61,23 @@
   }
 
   .dark {
-    --background: 222 47% 6%;
+    --background: 222 47% 5%;
     --foreground: 210 40% 98%;
 
-    --card: 222 40% 10%;
+    --card: 222 40% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 40% 10%;
+    --popover: 222 40% 8%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 160 84% 45%;
     --primary-foreground: 222 47% 6%;
     --primary-glow: 160 84% 65%;
 
-    --secondary: 222 30% 14%;
+    --secondary: 222 30% 12%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 222 30% 14%;
+    --muted: 222 30% 12%;
     --muted-foreground: 215 20% 72%;
 
     --accent: 160 84% 45%;
@@ -92,15 +92,15 @@
     --success: 142 71% 50%;
     --success-foreground: 222 47% 6%;
 
-    --border: 222 30% 18%;
-    --input: 222 30% 18%;
+    --border: 222 30% 15%;
+    --input: 222 30% 15%;
     --ring: 160 84% 45%;
 
     --gradient-primary: linear-gradient(135deg, hsl(160 84% 45%), hsl(180 84% 50%));
     --gradient-hero: linear-gradient(160deg, hsl(160 84% 45%) 0%, hsl(200 84% 55%) 100%);
-    --gradient-dark: linear-gradient(180deg, hsl(222 47% 10%) 0%, hsl(222 47% 4%) 100%);
-    --shadow-elegant: 0 10px 40px -10px hsl(160 84% 45% / 0.4);
-    --shadow-card: 0 4px 24px -8px hsl(0 0% 0% / 0.5);
+    --gradient-dark: linear-gradient(180deg, hsl(222 47% 8%) 0%, hsl(222 47% 3%) 100%);
+    --shadow-elegant: 0 10px 40px -10px hsl(160 84% 45% / 0.25);
+    --shadow-card: 0 4px 24px -8px hsl(0 0% 0% / 0.4);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -126,7 +126,6 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-tap-highlight-color: transparent;
-    overscroll-behavior-y: none;
   }
 }
 

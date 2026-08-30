@@ -1,24 +1,31 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { defaultSourceToggles } from "@/lib/osint/sources";
 
 export interface AppSettings {
   onboarded: boolean;
   sound: boolean;
   vibrate: boolean;
-  /** Opt-in automations. All default to off: nothing acts on an untrusted code. */
-  autoOpenUrls: boolean;
-  autoCopyText: boolean;
-  autoConnectWifi: boolean;
   theme: "dark" | "light";
-  /** Diagnostics are off by default — privacy-first. */
   telemetryEnabled: boolean;
-  /** Allow opt-in online enrichment providers (none enabled by default). */
-  onlineEnrichment: boolean;
+  defaultOpenDestinations: boolean;
+  confirmBeforeOpenDestinations: boolean;
+  autoStartCamera: boolean;
+  caseLanguage: string;
+  sourceToggles: Record<string, boolean>;
+  apiKeys: Record<string, string>;
+  externalLookupsOptedIn: boolean;
+  caseRetentionDays: number;
+  investigatorName?: string;
+  investigatorHandle?: string;
 }
 
 interface SettingsState extends AppSettings {
   set: (patch: Partial<AppSettings>) => void;
   completeOnboarding: () => void;
+  toggleSource: (sourceId: string, value: boolean) => void;
+  setApiKey: (keyId: string, value: string) => void;
+  resetSourceToggles: () => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -27,14 +34,23 @@ export const useSettings = create<SettingsState>()(
       onboarded: false,
       sound: true,
       vibrate: true,
-      autoOpenUrls: false,
-      autoCopyText: false,
-      autoConnectWifi: false,
       theme: "dark",
       telemetryEnabled: false,
-      onlineEnrichment: false,
+      defaultOpenDestinations: false,
+      confirmBeforeOpenDestinations: true,
+      autoStartCamera: true,
+      caseLanguage: "en",
+      sourceToggles: defaultSourceToggles(),
+      apiKeys: {},
+      externalLookupsOptedIn: false,
+      caseRetentionDays: 90,
       set: (patch) => set(patch),
       completeOnboarding: () => set({ onboarded: true }),
+      toggleSource: (sourceId, value) =>
+        set((s) => ({ sourceToggles: { ...s.sourceToggles, [sourceId]: value } })),
+      setApiKey: (keyId, value) =>
+        set((s) => ({ apiKeys: { ...s.apiKeys, [keyId]: value } })),
+      resetSourceToggles: () => set({ sourceToggles: defaultSourceToggles() }),
     }),
     { name: "scaniq-settings" },
   ),

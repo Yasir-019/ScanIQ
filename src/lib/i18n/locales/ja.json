@@ -4,10 +4,7 @@
     "tagline": "何でもスキャン。すぐに理解。"
   },
   "nav": {
-    "scan": "スキャン",
-    "history": "履歴",
-    "generate": "作成",
-    "profile": "プロフィール"
+    "scan": "スキャン"
   },
   "common": {
     "cancel": "キャンセル",
@@ -48,52 +45,6 @@
     "retryCamera": "カメラを再試行",
     "imageScanFailed": "画像を読み取れませんでした。より鮮明な写真をお試しください。"
   },
-  "history": {
-    "title": "履歴",
-    "tabAll": "すべて",
-    "tabFavorites": "お気に入り",
-    "searchPlaceholder": "スキャンを検索",
-    "emptyAll": "まだスキャンがありません。始めましょう!",
-    "emptyFavorites": "お気に入りなし。スターを付けて保存。",
-    "deleted": "削除しました",
-    "cleared": "履歴をクリアしました",
-    "addedFavorite": "お気に入りに追加",
-    "removedFavorite": "お気に入りから削除"
-  },
-  "generate": {
-    "title": "作成",
-    "placeholder": "下のフィールドを入力",
-    "downloaded": "QR コードをダウンロードしました",
-    "fields": {
-      "url": "URL",
-      "text": "テキスト",
-      "ssid": "ネットワーク名 (SSID)",
-      "password": "パスワード",
-      "encryption": "暗号化",
-      "name": "氏名",
-      "phone": "電話",
-      "email": "メール",
-      "to": "宛先",
-      "subject": "件名(任意)",
-      "number": "番号",
-      "message": "メッセージ",
-      "phoneNumber": "電話番号"
-    },
-    "types": {
-      "url": "URL",
-      "text": "テキスト",
-      "wifi": "Wi-Fi",
-      "vcard": "連絡先",
-      "email": "メール",
-      "sms": "SMS",
-      "phone": "電話"
-    },
-    "encryption": {
-      "wpa": "WPA / WPA2",
-      "wep": "WEP",
-      "none": "なし"
-    }
-  },
   "result": {
     "openLink": "リンクを開く",
     "copyPassword": "パスワードをコピー",
@@ -133,29 +84,6 @@
     "payee": "受取人",
     "amount": "金額",
     "openPayment": "決済アプリを開く"
-  },
-  "profile": {
-    "title": "プロフィール",
-    "proHeader": "ScanIQ Pro",
-    "proTitle": "無制限スキャンを解放",
-    "proBody": "クラウド同期、無制限 AI 説明、カスタム QR、一括エクスポート。",
-    "upgrade": "アップグレード",
-    "darkMode": "ダークモード",
-    "beep": "スキャン音",
-    "vibrate": "スキャン時の振動",
-    "autoOpen": "URL を自動で開く",
-    "language": "言語",
-    "shareSection": "ScanIQ を共有",
-    "shareLink": "アプリのリンクを共有",
-    "shareLinkSub": "友人にダウンロードリンクを送る",
-    "shareQR": "アプリの QR コードを表示",
-    "shareQRSub": "スキャンしてインストール",
-    "about": "ScanIQ について",
-    "aboutBody": "v1.0 · 何でもスキャン。すぐに理解。",
-    "privacy": "プライバシーとデータ",
-    "automationSection": "スマートオートメーション",
-    "autoCopy": "テキスト自動コピー",
-    "autoWifi": "Wi-Fiパスワード自動コピー"
   },
   "language": {
     "title": "言語",

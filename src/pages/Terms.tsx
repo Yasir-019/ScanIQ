@@ -15,7 +15,7 @@ export default function TermsScreen() {
     {
       icon: AlertCircle,
       title: "2. Permitted Use",
-      body: "ScanIQ provides scanning of QR codes and barcodes, as well as the creation of QR codes. You agree to use these features strictly for lawful, personal, and informational purposes. You may not use the app to transmit or scan any malicious payload.",
+      body: "ScanIQ provides scanning and OSINT investigation of QR codes and barcodes. You agree to use these features strictly for lawful, personal, and informational purposes. You may not use the app to transmit or scan any malicious payload.",
     },
     {
       icon: ShieldAlert,
@@ -30,13 +30,17 @@ export default function TermsScreen() {
   ];
 
   return (
-    <div className="safe-top h-full overflow-y-auto px-4 pb-6 pt-4">
-      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-        <ArrowLeft className="h-4 w-4" /> {t("common.back")}
-      </button>
-
-      <h1 className="mb-2 text-2xl font-bold tracking-tight">Terms of Service</h1>
-      <p className="mb-6 text-sm text-muted-foreground">Last updated: July 2026. Please read our terms carefully before using the app.</p>
+    <div className="space-y-4 max-w-5xl mx-auto pb-12">
+      <div className="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-sm space-y-2">
+        <button onClick={() => navigate(-1)} className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-3.5 w-3.5" /> {t("common.back", "Back")}
+        </button>
+        <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+          <FileText className="h-5 w-5 text-primary" />
+          <span>Terms of Service</span>
+        </h1>
+        <p className="text-xs text-muted-foreground">Last updated: July 2026. Please read our terms carefully before using the app.</p>
+      </div>
 
       <div className="space-y-4">
         {sections.map(({ icon: Icon, title, body }) => (

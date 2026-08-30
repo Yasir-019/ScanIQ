@@ -1,29 +1,30 @@
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
-import { ChevronLeft, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Check, Languages } from "lucide-react";
 import { SUPPORTED_LANGUAGES, setAppLanguage, type LanguageCode } from "@/lib/i18n";
 
 export default function LanguageScreen() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const current = (i18n.resolvedLanguage || i18n.language || "en") as string;
 
   const isSelected = (code: LanguageCode) =>
     current === code || current.toLowerCase() === code.toLowerCase();
 
   return (
-    <div className="safe-top h-full overflow-y-auto px-4 pb-6 pt-4">
-      <div className="mb-4 flex items-center gap-2">
-        <Link
-          to="/profile"
-          aria-label={t("common.back")}
-          className="-ml-2 rounded-full p-2 text-foreground hover:bg-secondary"
+    <div className="space-y-4 max-w-5xl mx-auto pb-12">
+      <div className="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-sm space-y-2">
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ChevronLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-2xl font-bold tracking-tight">{t("language.title")}</h1>
+          <ArrowLeft className="h-3.5 w-3.5" /> {t("common.back", "Back")}
+        </button>
+        <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+          <Languages className="h-5 w-5 text-primary" />
+          <span>{t("language.title", "Language Selection")}</span>
+        </h1>
+        <p className="text-xs text-muted-foreground">{t("language.subtitle")}</p>
       </div>
-
-      <p className="mb-4 text-sm text-muted-foreground">{t("language.subtitle")}</p>
 
       <ul className="space-y-2">
         {SUPPORTED_LANGUAGES.map((lang) => {

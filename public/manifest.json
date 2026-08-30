@@ -1,13 +1,13 @@
 {
-  "name": "ScanIQ — Smart QR & Barcode Scanner",
-  "short_name": "ScanIQ",
-  "description": "Scan QR codes and barcodes instantly. Smart actions, safety warnings, and AI explanations in one fast app.",
+  "name": "ScanIQ OSINT — QR/Barcode Investigation Workspace",
+  "short_name": "ScanIQ OSINT",
+  "description": "Free, open-source, privacy-first QR & barcode OSINT and threat-intel investigation tool. Scan safely, investigate thoroughly.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#0a1014",
   "background_color": "#0a1014",
-  "categories": ["utilities", "productivity"],
+  "categories": ["productivity", "utilities", "developer", "security"],
   "lang": "en",
   "dir": "ltr",
   "icons": [
@@ -68,25 +68,32 @@
   ],
   "shortcuts": [
     {
-      "name": "Scan QR Code",
+      "name": "Scan & Investigate",
       "short_name": "Scan",
-      "description": "Open camera to scan a QR code or barcode",
+      "description": "Open camera to scan a QR code or barcode and open an investigation",
       "url": "/",
       "icons": [{ "src": "/icons/icon-scan.png", "sizes": "192x192" }]
     },
     {
-      "name": "Generate QR Code",
-      "short_name": "Generate",
-      "description": "Create a new QR code",
-      "url": "/generate",
-      "icons": [{ "src": "/icons/icon-generate.png", "sizes": "192x192" }]
+      "name": "Investigation Cases",
+      "short_name": "Cases",
+      "description": "Open local investigation cases and case notes",
+      "url": "/cases",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Scan History",
-      "short_name": "History",
-      "description": "View your scan history",
-      "url": "/history",
-      "icons": [{ "src": "/icons/icon-history.png", "sizes": "192x192" }]
+      "name": "Intelligence Sources",
+      "short_name": "Sources",
+      "description": "Manage opt-in OSINT and threat-intel sources",
+      "url": "/sources",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Privacy & Settings",
+      "short_name": "Settings",
+      "description": "Scanner behavior, source consent, case retention, and destructive actions",
+      "url": "/privacy-settings",
+      "icons": [{ "src": "/icons/icon-scan.png", "sizes": "192x192" }]
     }
   ],
   "screenshots": [
@@ -95,22 +102,16 @@
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Scan QR codes and barcodes with camera"
+      "label": "Scan a QR or barcode safely and open an investigation case"
     },
     {
       "src": "/screenshots/generate.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Generate custom QR codes"
+      "label": "Full investigation report with explainable risk scoring and intelligence"
     }
   ],
   "prefer_related_applications": false,
-  "related_applications": [
-    {
-      "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=com.scaniq.app",
-      "id": "com.scaniq.app"
-    }
-  ]
+  "related_applications": []
 }

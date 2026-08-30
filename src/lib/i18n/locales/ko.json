@@ -4,10 +4,7 @@
     "tagline": "무엇이든 스캔. 즉시 이해."
   },
   "nav": {
-    "scan": "스캔",
-    "history": "기록",
-    "generate": "생성",
-    "profile": "프로필"
+    "scan": "스캔"
   },
   "common": {
     "cancel": "취소",
@@ -48,52 +45,6 @@
     "retryCamera": "카메라 재시도",
     "imageScanFailed": "이미지를 읽을 수 없습니다. 더 선명한 사진을 시도해 주세요."
   },
-  "history": {
-    "title": "기록",
-    "tabAll": "전체",
-    "tabFavorites": "즐겨찾기",
-    "searchPlaceholder": "스캔 검색",
-    "emptyAll": "스캔 기록이 없습니다. 시작해 보세요!",
-    "emptyFavorites": "즐겨찾기가 없습니다. 별표를 눌러 저장하세요.",
-    "deleted": "삭제됨",
-    "cleared": "기록이 지워졌습니다",
-    "addedFavorite": "즐겨찾기에 추가됨",
-    "removedFavorite": "즐겨찾기에서 제거됨"
-  },
-  "generate": {
-    "title": "생성",
-    "placeholder": "아래 필드를 입력하세요",
-    "downloaded": "QR 코드 다운로드됨",
-    "fields": {
-      "url": "URL",
-      "text": "텍스트",
-      "ssid": "네트워크 이름 (SSID)",
-      "password": "비밀번호",
-      "encryption": "암호화",
-      "name": "이름",
-      "phone": "전화",
-      "email": "이메일",
-      "to": "받는 사람",
-      "subject": "제목 (선택)",
-      "number": "번호",
-      "message": "메시지",
-      "phoneNumber": "전화번호"
-    },
-    "types": {
-      "url": "URL",
-      "text": "텍스트",
-      "wifi": "Wi-Fi",
-      "vcard": "연락처",
-      "email": "이메일",
-      "sms": "SMS",
-      "phone": "전화"
-    },
-    "encryption": {
-      "wpa": "WPA / WPA2",
-      "wep": "WEP",
-      "none": "없음"
-    }
-  },
   "result": {
     "openLink": "링크 열기",
     "copyPassword": "비밀번호 복사",
@@ -133,29 +84,6 @@
     "payee": "수취인",
     "amount": "금액",
     "openPayment": "결제 앱 열기"
-  },
-  "profile": {
-    "title": "프로필",
-    "proHeader": "ScanIQ Pro",
-    "proTitle": "무제한 스캔 잠금 해제",
-    "proBody": "클라우드 동기화, 무제한 AI 설명, 사용자 정의 QR, 대량 내보내기.",
-    "upgrade": "업그레이드",
-    "darkMode": "다크 모드",
-    "beep": "스캔 시 소리",
-    "vibrate": "스캔 시 진동",
-    "autoOpen": "URL 자동 열기",
-    "language": "언어",
-    "shareSection": "ScanIQ 공유",
-    "shareLink": "앱 링크 공유",
-    "shareLinkSub": "친구에게 다운로드 링크 보내기",
-    "shareQR": "앱 QR 코드 표시",
-    "shareQRSub": "스캔하여 설치",
-    "about": "ScanIQ 정보",
-    "aboutBody": "v1.0 · 무엇이든 스캔. 즉시 이해.",
-    "privacy": "개인정보 및 데이터",
-    "automationSection": "스마트 자동화",
-    "autoCopy": "텍스트 자동 복사",
-    "autoWifi": "Wi-Fi 비밀번호 자동 복사"
   },
   "language": {
     "title": "언어",

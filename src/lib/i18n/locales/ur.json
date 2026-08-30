@@ -4,10 +4,7 @@
     "tagline": "ہر چیز اسکین کریں۔ فوراً سمجھیں۔"
   },
   "nav": {
-    "scan": "اسکین",
-    "history": "تاریخ",
-    "generate": "تخلیق",
-    "profile": "پروفائل"
+    "scan": "اسکین"
   },
   "common": {
     "cancel": "منسوخ کریں",
@@ -48,52 +45,6 @@
     "retryCamera": "کیمرہ دوبارہ کوشش کریں",
     "imageScanFailed": "تصویر پڑھ نہیں سکے۔ واضح تصویر آزمائیں۔"
   },
-  "history": {
-    "title": "تاریخ",
-    "tabAll": "سب",
-    "tabFavorites": "پسندیدہ",
-    "searchPlaceholder": "اسکینز تلاش کریں",
-    "emptyAll": "ابھی تک کوئی اسکین نہیں۔ اسکین کرنا شروع کریں!",
-    "emptyFavorites": "کوئی پسندیدہ نہیں۔ محفوظ کرنے کے لیے ستارہ لگائیں۔",
-    "deleted": "حذف ہو گیا",
-    "cleared": "تاریخ صاف ہو گئی",
-    "addedFavorite": "پسندیدہ میں شامل کر دیا گیا",
-    "removedFavorite": "پسندیدہ سے ہٹا دیا گیا"
-  },
-  "generate": {
-    "title": "تخلیق",
-    "placeholder": "نیچے کے فیلڈز بھریں",
-    "downloaded": "QR کوڈ ڈاؤن لوڈ ہو گیا",
-    "fields": {
-      "url": "URL",
-      "text": "متن",
-      "ssid": "نیٹ ورک کا نام (SSID)",
-      "password": "پاس ورڈ",
-      "encryption": "خفیہ کاری",
-      "name": "پورا نام",
-      "phone": "فون",
-      "email": "ای میل",
-      "to": "وصول کنندہ",
-      "subject": "موضوع (اختیاری)",
-      "number": "نمبر",
-      "message": "پیغام",
-      "phoneNumber": "فون نمبر"
-    },
-    "types": {
-      "url": "URL",
-      "text": "متن",
-      "wifi": "Wi-Fi",
-      "vcard": "رابطہ",
-      "email": "ای میل",
-      "sms": "SMS",
-      "phone": "فون"
-    },
-    "encryption": {
-      "wpa": "WPA / WPA2",
-      "wep": "WEP",
-      "none": "کوئی نہیں"
-    }
-  },
   "result": {
     "openLink": "لنک کھولیں",
     "copyPassword": "پاس ورڈ کاپی کریں",
@@ -133,29 +84,6 @@
     "payee": "وصول کنندہ",
     "amount": "رقم",
     "openPayment": "ادائیگی ایپ کھولیں"
-  },
-  "profile": {
-    "title": "پروفائل",
-    "proHeader": "ScanIQ Pro",
-    "proTitle": "لامحدود اسکیننگ کھولیں",
-    "proBody": "کلاؤڈ سنک، لامحدود AI وضاحت، حسب ضرورت QR، بلک ایکسپورٹ۔",
-    "upgrade": "اپ گریڈ",
-    "darkMode": "ڈارک موڈ",
-    "beep": "اسکین پر آواز",
-    "vibrate": "اسکین پر وائبریٹ",
-    "autoOpen": "URL خودکار کھولیں",
-    "language": "زبان",
-    "shareSection": "ScanIQ شیئر کریں",
-    "shareLink": "ایپ لنک شیئر کریں",
-    "shareLinkSub": "دوست کو ڈاؤن لوڈ لنک بھیجیں",
-    "shareQR": "ایپ QR کوڈ دکھائیں",
-    "shareQRSub": "اسکین کر کے انسٹال کریں",
-    "about": "ScanIQ کے بارے میں",
-    "aboutBody": "v1.0 · ہر چیز اسکین کریں۔ فوراً سمجھیں۔",
-    "privacy": "رازداری اور ڈیٹا",
-    "automationSection": "سمارٹ آٹومیشن",
-    "autoCopy": "متن خودکار کاپی",
-    "autoWifi": "Wi-Fi پاس ورڈ خودکار کاپی"
   },
   "language": {
     "title": "زبان",

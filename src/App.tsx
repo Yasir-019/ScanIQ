@@ -11,10 +11,11 @@ import ScanScreen from "./pages/Scan";
 import NotFound from "./pages/NotFound.tsx";
 import { telemetry } from "@/lib/telemetry";
 
-// Lazy-loaded routes — code-split for faster initial load
 const Onboarding = lazy(() => import("./pages/Onboarding"));
-const HistoryScreen = lazy(() => import("./pages/History"));
-const ProfileScreen = lazy(() => import("./pages/Profile"));
+const CasesScreen = lazy(() => import("./pages/Cases"));
+const SourcesScreen = lazy(() => import("./pages/Sources"));
+const PrivacySettingsScreen = lazy(() => import("./pages/PrivacySettings"));
+const InvestigationScreen = lazy(() => import("./pages/Investigation"));
 const LanguageScreen = lazy(() => import("./pages/Language"));
 const PrivacyScreen = lazy(() => import("./pages/Privacy"));
 const TermsScreen = lazy(() => import("./pages/Terms"));
@@ -22,7 +23,9 @@ const AboutScreen = lazy(() => import("./pages/About"));
 const LicensesScreen = lazy(() => import("./pages/Licenses"));
 
 const PageFallback = () => (
-  <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading…</div>
+  <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+    Loading investigation workspace…
+  </div>
 );
 
 const App = () => {
@@ -50,13 +53,79 @@ const App = () => {
               <Route element={<AppShell />}>
                 <Route path="/" element={<ScanScreen />} />
                 <Route
-                  path="/history"
+                  path="/cases"
                   element={
                     <Suspense fallback={<PageFallback />}>
-                      <HistoryScreen />
+                      <CasesScreen />
                     </Suspense>
                   }
                 />
+                <Route
+                  path="/sources"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <SourcesScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/privacy-settings"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PrivacySettingsScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/investigation/:id"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InvestigationScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/language"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <LanguageScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/privacy"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PrivacyScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/terms"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <TermsScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/about"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AboutScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/licenses"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <LicensesScreen />
+                    </Suspense>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Route>
             </Routes>
           )}
         </BrowserRouter>

@@ -4,10 +4,7 @@
     "tagline": "कुछ भी स्कैन करें. तुरंत समझें."
   },
   "nav": {
-    "scan": "स्कैन",
-    "history": "इतिहास",
-    "generate": "बनाएँ",
-    "profile": "प्रोफ़ाइल"
+    "scan": "स्कैन"
   },
   "common": {
     "cancel": "रद्द करें",
@@ -48,52 +45,6 @@
     "retryCamera": "कैमरा पुनः प्रयास करें",
     "imageScanFailed": "छवि पढ़ नहीं सकी। स्पष्ट फ़ोटो आज़माएं।"
   },
-  "history": {
-    "title": "इतिहास",
-    "tabAll": "सभी",
-    "tabFavorites": "पसंदीदा",
-    "searchPlaceholder": "स्कैन खोजें",
-    "emptyAll": "अभी तक कोई स्कैन नहीं। स्कैन करना शुरू करें!",
-    "emptyFavorites": "कोई पसंदीदा नहीं। सहेजने के लिए स्टार करें।",
-    "deleted": "हटा दिया गया",
-    "cleared": "इतिहास साफ़ किया गया",
-    "addedFavorite": "पसंदीदा में जोड़ा गया",
-    "removedFavorite": "पसंदीदा से हटाया गया"
-  },
-  "generate": {
-    "title": "बनाएँ",
-    "placeholder": "नीचे फ़ील्ड भरें",
-    "downloaded": "QR कोड डाउनलोड हो गया",
-    "fields": {
-      "url": "URL",
-      "text": "टेक्स्ट",
-      "ssid": "नेटवर्क नाम (SSID)",
-      "password": "पासवर्ड",
-      "encryption": "एन्क्रिप्शन",
-      "name": "पूरा नाम",
-      "phone": "फ़ोन",
-      "email": "ईमेल",
-      "to": "प्राप्तकर्ता",
-      "subject": "विषय (वैकल्पिक)",
-      "number": "संख्या",
-      "message": "संदेश",
-      "phoneNumber": "फ़ोन नंबर"
-    },
-    "types": {
-      "url": "URL",
-      "text": "टेक्स्ट",
-      "wifi": "Wi-Fi",
-      "vcard": "संपर्क",
-      "email": "ईमेल",
-      "sms": "SMS",
-      "phone": "फ़ोन"
-    },
-    "encryption": {
-      "wpa": "WPA / WPA2",
-      "wep": "WEP",
-      "none": "कोई नहीं"
-    }
-  },
   "result": {
     "openLink": "लिंक खोलें",
     "copyPassword": "पासवर्ड कॉपी करें",
@@ -133,29 +84,6 @@
     "payee": "प्राप्तकर्ता",
     "amount": "राशि",
     "openPayment": "भुगतान ऐप खोलें"
-  },
-  "profile": {
-    "title": "प्रोफ़ाइल",
-    "proHeader": "ScanIQ Pro",
-    "proTitle": "असीमित स्कैनिंग अनलॉक करें",
-    "proBody": "क्लाउड सिंक, असीमित AI व्याख्या, कस्टम QR ब्रांडिंग, बल्क एक्सपोर्ट।",
-    "upgrade": "अपग्रेड",
-    "darkMode": "डार्क मोड",
-    "beep": "स्कैन पर बीप",
-    "vibrate": "स्कैन पर वाइब्रेट",
-    "autoOpen": "स्वतः URL खोलें",
-    "language": "भाषा",
-    "shareSection": "ScanIQ साझा करें",
-    "shareLink": "ऐप लिंक साझा करें",
-    "shareLinkSub": "किसी मित्र को डाउनलोड लिंक भेजें",
-    "shareQR": "ऐप QR कोड दिखाएँ",
-    "shareQRSub": "किसी को स्कैन करने दें और इंस्टॉल करें",
-    "about": "ScanIQ के बारे में",
-    "aboutBody": "v1.0 · कुछ भी स्कैन करें. तुरंत समझें.",
-    "privacy": "गोपनीयता और डेटा",
-    "automationSection": "स्मार्ट ऑटोमेशन",
-    "autoCopy": "टेक्स्ट स्वचालित कॉपी",
-    "autoWifi": "Wi-Fi पासवर्ड स्वचालित कॉपी"
   },
   "language": {
     "title": "भाषा",

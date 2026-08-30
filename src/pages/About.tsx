@@ -36,15 +36,19 @@ export default function AboutScreen() {
   ];
 
   return (
-    <div className="safe-top h-full overflow-y-auto px-4 pb-6 pt-4">
-      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-        <ArrowLeft className="h-4 w-4" /> {t("common.back")}
-      </button>
-
-      <h1 className="mb-1 text-2xl font-bold tracking-tight">About {APP_NAME}</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        Version {APP_VERSION} · {APP_TAGLINE}
-      </p>
+    <div className="space-y-4 max-w-5xl mx-auto pb-12">
+      <div className="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-sm space-y-2">
+        <button onClick={() => navigate(-1)} className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-3.5 w-3.5" /> {t("common.back", "Back")}
+        </button>
+        <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+          <Info className="h-5 w-5 text-primary" />
+          <span>About {APP_NAME}</span>
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Version {APP_VERSION} · {APP_TAGLINE}
+        </p>
+      </div>
 
       <div className="space-y-4">
         {sections.map(({ icon: Icon, title, body }) => (

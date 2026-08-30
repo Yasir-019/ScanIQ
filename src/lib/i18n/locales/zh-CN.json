@@ -4,10 +4,7 @@
     "tagline": "扫描一切,即刻了解。"
   },
   "nav": {
-    "scan": "扫描",
-    "history": "历史",
-    "generate": "生成",
-    "profile": "我的"
+    "scan": "扫描"
   },
   "common": {
     "cancel": "取消",
@@ -48,52 +45,6 @@
     "retryCamera": "重试相机",
     "imageScanFailed": "无法读取图片。请尝试更清晰的照片。"
   },
-  "history": {
-    "title": "历史",
-    "tabAll": "全部",
-    "tabFavorites": "收藏",
-    "searchPlaceholder": "搜索扫描记录",
-    "emptyAll": "还没有扫描记录,开始扫描吧!",
-    "emptyFavorites": "暂无收藏,标星即可保存。",
-    "deleted": "已删除",
-    "cleared": "历史已清空",
-    "addedFavorite": "已添加到收藏",
-    "removedFavorite": "已从收藏移除"
-  },
-  "generate": {
-    "title": "生成",
-    "placeholder": "请填写下方字段",
-    "downloaded": "二维码已下载",
-    "fields": {
-      "url": "网址",
-      "text": "文本",
-      "ssid": "网络名称 (SSID)",
-      "password": "密码",
-      "encryption": "加密方式",
-      "name": "姓名",
-      "phone": "电话",
-      "email": "邮箱",
-      "to": "收件人",
-      "subject": "主题(可选)",
-      "number": "号码",
-      "message": "信息",
-      "phoneNumber": "电话号码"
-    },
-    "types": {
-      "url": "网址",
-      "text": "文本",
-      "wifi": "Wi-Fi",
-      "vcard": "联系人",
-      "email": "邮箱",
-      "sms": "短信",
-      "phone": "电话"
-    },
-    "encryption": {
-      "wpa": "WPA / WPA2",
-      "wep": "WEP",
-      "none": "无"
-    }
-  },
   "result": {
     "openLink": "打开链接",
     "copyPassword": "复制密码",
@@ -133,29 +84,6 @@
     "payee": "收款人",
     "amount": "金额",
     "openPayment": "打开支付应用"
-  },
-  "profile": {
-    "title": "我的",
-    "proHeader": "ScanIQ Pro",
-    "proTitle": "解锁无限扫描",
-    "proBody": "云同步、无限 AI 解释、自定义二维码品牌、批量导出。",
-    "upgrade": "升级",
-    "darkMode": "深色模式",
-    "beep": "扫描提示音",
-    "vibrate": "扫描振动",
-    "autoOpen": "自动打开网址",
-    "language": "语言",
-    "shareSection": "分享 ScanIQ",
-    "shareLink": "分享应用链接",
-    "shareLinkSub": "把下载链接发给朋友",
-    "shareQR": "显示应用二维码",
-    "shareQRSub": "扫一扫即可安装",
-    "about": "关于 ScanIQ",
-    "aboutBody": "v1.0 · 扫描一切,即刻了解。",
-    "privacy": "隐私与数据",
-    "automationSection": "智能自动化",
-    "autoCopy": "自动复制文本",
-    "autoWifi": "自动复制Wi-Fi密码"
   },
   "language": {
     "title": "语言",

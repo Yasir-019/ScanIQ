@@ -4,10 +4,7 @@
     "tagline": "掃描一切,即刻了解。"
   },
   "nav": {
-    "scan": "掃描",
-    "history": "歷史",
-    "generate": "產生",
-    "profile": "我的"
+    "scan": "掃描"
   },
   "common": {
     "cancel": "取消",
@@ -48,52 +45,6 @@
     "retryCamera": "重試相機",
     "imageScanFailed": "無法讀取圖片。請嘗試更清晰的照片。"
   },
-  "history": {
-    "title": "歷史",
-    "tabAll": "全部",
-    "tabFavorites": "收藏",
-    "searchPlaceholder": "搜尋掃描記錄",
-    "emptyAll": "尚無掃描記錄,開始掃描吧!",
-    "emptyFavorites": "尚無收藏,標星即可儲存。",
-    "deleted": "已刪除",
-    "cleared": "歷史已清空",
-    "addedFavorite": "已加入收藏",
-    "removedFavorite": "已從收藏移除"
-  },
-  "generate": {
-    "title": "產生",
-    "placeholder": "請填寫下方欄位",
-    "downloaded": "QR 碼已下載",
-    "fields": {
-      "url": "網址",
-      "text": "文字",
-      "ssid": "網路名稱 (SSID)",
-      "password": "密碼",
-      "encryption": "加密方式",
-      "name": "姓名",
-      "phone": "電話",
-      "email": "電子郵件",
-      "to": "收件人",
-      "subject": "主旨(選填)",
-      "number": "號碼",
-      "message": "訊息",
-      "phoneNumber": "電話號碼"
-    },
-    "types": {
-      "url": "網址",
-      "text": "文字",
-      "wifi": "Wi-Fi",
-      "vcard": "聯絡人",
-      "email": "郵件",
-      "sms": "簡訊",
-      "phone": "電話"
-    },
-    "encryption": {
-      "wpa": "WPA / WPA2",
-      "wep": "WEP",
-      "none": "無"
-    }
-  },
   "result": {
     "openLink": "開啟連結",
     "copyPassword": "複製密碼",
@@ -133,29 +84,6 @@
     "payee": "收款人",
     "amount": "金額",
     "openPayment": "開啟付款應用程式"
-  },
-  "profile": {
-    "title": "我的",
-    "proHeader": "ScanIQ Pro",
-    "proTitle": "解鎖無限掃描",
-    "proBody": "雲端同步、無限 AI 說明、自訂 QR 品牌、批次匯出。",
-    "upgrade": "升級",
-    "darkMode": "深色模式",
-    "beep": "掃描提示音",
-    "vibrate": "掃描震動",
-    "autoOpen": "自動開啟網址",
-    "language": "語言",
-    "shareSection": "分享 ScanIQ",
-    "shareLink": "分享應用連結",
-    "shareLinkSub": "將下載連結傳給朋友",
-    "shareQR": "顯示應用 QR 碼",
-    "shareQRSub": "掃描即可安裝",
-    "about": "關於 ScanIQ",
-    "aboutBody": "v1.0 · 掃描一切,即刻了解。",
-    "privacy": "隱私與資料",
-    "automationSection": "智慧自動化",
-    "autoCopy": "自動複製文字",
-    "autoWifi": "自動複製Wi-Fi密碼"
   },
   "language": {
     "title": "語言",

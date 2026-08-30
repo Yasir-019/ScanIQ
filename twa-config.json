@@ -30,10 +30,10 @@
       "chosenIconUrl": "https://scaniq.app/icons/icon-scan.png"
     },
     {
-      "name": "Generate QR Code",
-      "shortName": "Generate",
-      "url": "/generate",
-      "chosenIconUrl": "https://scaniq.app/icons/icon-generate.png"
+      "name": "Investigation Cases",
+      "shortName": "Cases",
+      "url": "/cases",
+      "chosenIconUrl": "https://scaniq.app/icons/icon-512x512.png"
     }
   ],
   "features": {
