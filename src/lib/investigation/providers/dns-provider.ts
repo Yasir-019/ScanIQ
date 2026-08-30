@@ -23,17 +23,6 @@ import { parseIpv4Notation } from "../url-normalizer";
 // DNS Record Type Mapping according to IANA DNS Parameters
 export type SupportedDnsType = "A" | "AAAA" | "CNAME" | "MX" | "NS" | "TXT" | "SOA" | "CAA";
 
-const DNS_TYPE_CODES: Record<SupportedDnsType, number> = {
-  A: 1,
-  NS: 2,
-  CNAME: 5,
-  SOA: 6,
-  MX: 15,
-  TXT: 16,
-  AAAA: 28,
-  CAA: 257,
-};
-
 const CODE_TO_DNS_TYPE: Record<number, SupportedDnsType> = {
   1: "A",
   2: "NS",

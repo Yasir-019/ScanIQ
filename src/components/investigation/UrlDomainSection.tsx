@@ -1,13 +1,10 @@
-import React from "react";
 import {
   Globe,
   Link2,
   Calendar,
   Building,
   Server,
-  ShieldAlert,
   Info,
-  CheckCircle2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { InvestigationReport } from "@/lib/scan/types";

@@ -168,7 +168,7 @@ export class AbuseIpdbProvider extends BaseIntelligenceProvider {
     if (score >= 50 || totalReports >= 10) {
       findings.push({
         id: `finding-abuseipdb-high-${target.value}-${now}`,
-        category: "blocklist",
+        category: "reputation",
         nature: "external_intelligence",
         finding: `AbuseIPDB High Abuse Confidence: ${score}% (${totalReports} reports)`,
         severity: "high",
@@ -182,7 +182,7 @@ export class AbuseIpdbProvider extends BaseIntelligenceProvider {
     } else if (score >= 10 || totalReports > 0) {
       findings.push({
         id: `finding-abuseipdb-med-${target.value}-${now}`,
-        category: "blocklist",
+        category: "reputation",
         nature: "external_intelligence",
         finding: `AbuseIPDB Moderate Abuse History: ${score}% (${totalReports} report${totalReports === 1 ? "" : "s"})`,
         severity: "medium",
@@ -195,7 +195,7 @@ export class AbuseIpdbProvider extends BaseIntelligenceProvider {
     } else {
       findings.push({
         id: `finding-abuseipdb-clean-${target.value}-${now}`,
-        category: "blocklist",
+        category: "reputation",
         nature: "external_intelligence",
         finding: "AbuseIPDB Confidence Score: 0% (0 Reports)",
         severity: "informational",

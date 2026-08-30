@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { FindingSeverity, RiskLevel } from "@/lib/scan/types";
+import type { RiskLevel } from "@/lib/scan/types";
+import type { FindingSeverity } from "@/lib/investigation/types";
 
 // ==========================================
 // 1. Unified Severity Badges (Never color alone)

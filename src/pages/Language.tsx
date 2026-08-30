@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Languages } from "lucide-react";
 import { SUPPORTED_LANGUAGES, setAppLanguage, type LanguageCode } from "@/lib/i18n";

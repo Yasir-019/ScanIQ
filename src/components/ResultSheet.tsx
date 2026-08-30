@@ -8,7 +8,6 @@ import {
   SearchCheck,
   ShieldCheck,
   ShieldAlert,
-  ShieldX,
   FileCode2,
   Globe,
   Radio,
@@ -16,7 +15,6 @@ import {
   CreditCard,
   User,
   ArrowRight,
-  ExternalLink,
 } from "lucide-react";
 import type { ScanRecord, ScanContentType } from "@/lib/scan/types";
 import { parseScanContent } from "@/lib/scan/parser";

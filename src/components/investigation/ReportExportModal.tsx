@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   Download,
@@ -6,12 +6,6 @@ import {
   Copy,
   Check,
   X,
-  Shield,
-  Layers,
-  Globe,
-  Network,
-  Activity,
-  Code2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

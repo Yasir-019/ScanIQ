@@ -1,17 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Code2,
   Copy,
   Check,
-  Server,
-  Globe,
-  Network,
-  Database,
-  ChevronDown,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import type { InvestigationReport } from "@/lib/scan/types";
 import { toast } from "sonner";
 

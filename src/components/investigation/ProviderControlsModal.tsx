@@ -1,10 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
-  ShieldCheck,
-  ShieldAlert,
-  Shield,
   Lock,
-  ExternalLink,
   Settings,
   Eye,
   X,
@@ -112,7 +108,7 @@ export function ProviderControlsModal({
           </div>
           <Switch
             checked={settings.externalLookupsOptedIn}
-            onCheckedChange={(checked) => settings.setExternalLookupsOptedIn(checked)}
+            onCheckedChange={(checked) => settings.set({ externalLookupsOptedIn: checked })}
             aria-label="Toggle global external lookups consent"
           />
         </div>
@@ -165,7 +161,7 @@ export function ProviderControlsModal({
                     )}
                     <Switch
                       checked={isEnabled}
-                      onCheckedChange={(checked) => settings.setSourceToggle(prov.id, checked)}
+                      onCheckedChange={(checked) => settings.toggleSource(prov.id, checked)}
                       aria-label={`Toggle ${prov.name}`}
                     />
                   </div>

@@ -7,8 +7,6 @@ import {
   IpinfoProvider,
   correlateInfrastructure,
   investigationEngine,
-  ProviderOrchestrator,
-  ProviderRegistry,
   RateLimitTracker,
 } from "@/lib/investigation";
 import { useSettings } from "@/lib/settings";

@@ -1,13 +1,11 @@
 import React, { useState, useMemo } from "react";
 import {
   Clock,
-  Calendar,
   ShieldAlert,
   Server,
   FileCode,
   Globe,
   Radio,
-  Filter,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { InvestigationReport } from "@/lib/scan/types";

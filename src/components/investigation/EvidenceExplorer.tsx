@@ -1,12 +1,11 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Activity,
   Search,
-  Fingerprint,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import type { OsintFinding, RiskLevel } from "@/lib/scan/types";
+import type { OsintFinding } from "@/lib/scan/types";
 import { cn } from "@/lib/utils";
 import {
   SeverityBadge,

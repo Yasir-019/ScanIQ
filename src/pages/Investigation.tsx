@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   FileText,
@@ -22,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { db } from "@/lib/db";
-import type { InvestigationReport, ScanRecord } from "@/lib/scan/types";
+import type { ScanRecord } from "@/lib/scan/types";
 import type { UnifiedInvestigationModel } from "@/lib/investigation/synthesis-types";
 import { investigationEngine } from "@/lib/investigation/engine";
 import { useSettings } from "@/lib/settings";
@@ -43,7 +42,6 @@ import { ProviderControlsModal } from "@/components/investigation/ProviderContro
 import { ReportExportModal } from "@/components/investigation/ReportExportModal";
 
 export default function InvestigationScreen() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const { id = "" } = useParams();
   const settings = useSettings();

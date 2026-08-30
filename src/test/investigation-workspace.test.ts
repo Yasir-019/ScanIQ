@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { investigationEngine } from "@/lib/investigation";
-import type { ScanRecord, InvestigationReport } from "@/lib/scan/types";
+import type { ScanRecord } from "@/lib/scan/types";
 import { useSettings } from "@/lib/settings";
 
 describe("Phase 4A: Investigation Report & Analyst Workspace", () => {

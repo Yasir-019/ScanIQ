@@ -11,7 +11,6 @@ import type {
   InvestigationGraphModel,
   SynthesisGraphEdge,
   SynthesisGraphNode,
-  TemporalFreshness,
   UnifiedInvestigationModel,
 } from "./synthesis-types";
 import { evaluateFreshness, IntelligenceSynthesizer } from "./synthesizer";

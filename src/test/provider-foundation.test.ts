@@ -5,6 +5,7 @@ import {
   ProviderOrchestrator,
   ProviderRegistry,
   RateLimitTracker,
+  type ProviderCapability,
   type ProviderContext,
   type ProviderTarget,
   type TargetType,

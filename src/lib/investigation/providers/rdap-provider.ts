@@ -7,7 +7,6 @@ import type {
   ProviderContext,
   ProviderPrivacy,
   ProviderTarget,
-  RateLimitInfo,
   TargetType,
 } from "./types";
 import type {

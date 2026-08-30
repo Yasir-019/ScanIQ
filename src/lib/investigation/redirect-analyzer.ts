@@ -14,7 +14,7 @@ export function analyzeRedirectPatternsLocally(
     return { findings };
   }
 
-  const { summary, suspiciousQueryParams, original } = urlResult;
+  const { summary, suspiciousQueryParams } = urlResult;
   const redirectParams = suspiciousQueryParams.filter((p) =>
     p.reason.includes("redirect") || p.reason.includes("destination") || p.key.toLowerCase().includes("dest") || p.key.toLowerCase().includes("url"),
   );

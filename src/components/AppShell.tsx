@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import {
   ScanSearch,
   Briefcase,
@@ -22,7 +22,6 @@ const primaryNavItems = [
 
 const AppShell = memo(function AppShell() {
   const { t } = useTranslation();
-  const location = useLocation();
 
   const navItems = useMemo(
     () =>

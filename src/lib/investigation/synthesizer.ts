@@ -1,12 +1,10 @@
 import type {
   InvestigationFinding,
-  TargetCollection,
 } from "./types";
 import type {
   ConflictingIntelligence,
   ProviderOpinion,
   TemporalFreshness,
-  UnifiedInvestigationModel,
 } from "./synthesis-types";
 import type { ProviderResult } from "./providers/types";
 

@@ -1,19 +1,11 @@
-import React from "react";
 import {
-  ShieldAlert,
-  ShieldCheck,
-  ShieldX,
-  ShieldQuestion,
   CheckCircle2,
-  AlertTriangle,
   Clock,
-  Activity,
-  Layers,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { InvestigationReport, RiskLevel } from "@/lib/scan/types";
+import type { InvestigationReport } from "@/lib/scan/types";
 import { cn } from "@/lib/utils";
-import { SeverityBadge, SEVERITY_CONFIG } from "@/components/investigation/CyberBadges";
+import { SEVERITY_CONFIG } from "@/components/investigation/CyberBadges";
 
 interface ExecutiveVerdictProps {
   report: InvestigationReport;
@@ -36,7 +28,7 @@ export function ExecutiveVerdict({ report }: ExecutiveVerdictProps) {
           : "Complete")
       : report.status === "running"
       ? "Querying Providers..."
-      : report.status === "failed"
+      : report.status === "error"
       ? "Investigation Failed"
       : "Pending";
 

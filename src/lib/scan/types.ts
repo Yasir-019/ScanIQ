@@ -95,7 +95,7 @@ export interface UrlPayloadSummary {
 }
 
 export interface DnsRecord {
-  type: "A" | "AAAA" | "CNAME" | "NS" | "MX" | "TXT" | "SOA";
+  type: "A" | "AAAA" | "CNAME" | "NS" | "MX" | "TXT" | "SOA" | "CAA";
   value: string;
   ttl?: number;
 }

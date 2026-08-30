@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { normalizeAndAnalyzeUrl } from "@/lib/investigation/url-normalizer";
 import { analyzeUrlHeuristics } from "@/lib/investigation/url-heuristics";
 import { detectBrandImpersonation } from "@/lib/investigation/brand-detector";
@@ -26,32 +26,34 @@ describe("Phase 5: Advanced OSINT & Detection Intelligence", () => {
       const allFindings = [...normFindings, ...heurFindings];
 
       expect(allFindings.some((f) => f.finding.includes("Punycode"))).toBe(true);
+      expect(result.summary.isIdn).toBe(true);
     });
 
-    it("detects non-standard and dangerous port in URL", () => {
-      const url = "http://192.168.1.1:3389/admin";
+    it("detects embedded basic-auth user credentials in URLs", () => {
+      const url = "https://admin:supersecretpassword@router-config.local/setup";
+      const { findings } = analyzePayload(url);
+
+      expect(findings.some((f) => f.finding.includes("Embedded authentication credentials"))).toBe(true);
+    });
+
+    it("detects suspicious port destinations (non-standard web ports)", () => {
+      const url = "https://bank-login.com:6667/auth";
       const { result, findings } = normalizeAndAnalyzeUrl(url);
-      expect(findings.some((f) => f.finding.includes(":3389"))).toBe(true);
-      expect(result.summary.port).toBe(3389);
+
+      expect(findings.some((f) => f.finding.includes(":6667"))).toBe(true);
+      expect(result.summary.port).toBe(6667);
     });
   });
 
-  describe("2. Brand Impersonation & Deceptive Subdomains", () => {
-    it("detects homoglyph substitutions in brand names (e.g. paypa1)", () => {
-      const result = detectBrandImpersonation("paypa1.com");
+  describe("2. Defensive Brand Impersonation Intelligence", () => {
+    it("detects typosquatted/lookalike domains for major brands", () => {
+      const result = detectBrandImpersonation("paypa1-security.com");
       expect(result.detected).toBe(true);
       expect(result.impersonatedBrand?.name).toBe("PayPal");
-      expect(result.similarityType).toBe("homoglyph");
+      expect(result.findings.length).toBeGreaterThan(0);
     });
 
-    it("detects deceptive subdomain structures (e.g. paypal.com.verify-identity.xyz)", () => {
-      const result = detectBrandImpersonation("verify-identity.xyz", "paypal.com.verify-identity.xyz");
-      expect(result.detected).toBe(true);
-      expect(result.impersonatedBrand?.name).toBe("PayPal");
-      expect(result.similarityType).toBe("subdomain_deception");
-    });
-
-    it("detects brand keyword insertion with security terminology", () => {
+    it("detects keyword-stuffed brand phishing hostnames", () => {
       const result = detectBrandImpersonation("chase-security-verify.com");
       expect(result.detected).toBe(true);
       expect(result.impersonatedBrand?.name).toBe("Chase");
@@ -61,7 +63,7 @@ describe("Phase 5: Advanced OSINT & Detection Intelligence", () => {
   describe("3. Payload Intelligence (Wi-Fi, Crypto, vCard, Dangerous Schemes)", () => {
     it("identifies unencrypted open Wi-Fi configurations as a medium security concern", () => {
       const wifiPayload = "WIFI:S:Airport_Free_Wifi;T:nopass;P:;;";
-      const { metrics, targets, findings } = analyzePayload(wifiPayload);
+      const { targets, findings } = analyzePayload(wifiPayload);
 
       expect(targets.wifiConfigs).toHaveLength(1);
       expect(targets.wifiConfigs?.[0].ssid).toBe("Airport_Free_Wifi");

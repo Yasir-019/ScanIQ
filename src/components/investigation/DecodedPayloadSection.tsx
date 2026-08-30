@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   FileCode,
   Copy,
   ExternalLink,
   ShieldAlert,
-  AlertTriangle,
   Lock,
   Globe,
   Hash,

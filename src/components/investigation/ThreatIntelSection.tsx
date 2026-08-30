@@ -1,6 +1,4 @@
-import React from "react";
 import {
-  ShieldAlert,
   DatabaseZap,
   ExternalLink,
   Info,

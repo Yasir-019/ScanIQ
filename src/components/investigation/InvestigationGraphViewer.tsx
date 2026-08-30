@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Network,
-  Share2,
   Globe,
   Server,
   Building,
@@ -12,15 +11,11 @@ import {
   Lock,
   ArrowRight,
   Info,
-  Clock,
   Search,
-  Layers,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type {
-  SynthesisGraphNode,
-  SynthesisGraphEdge,
   UnifiedInvestigationModel,
 } from "@/lib/investigation/synthesis-types";
 import { cn } from "@/lib/utils";

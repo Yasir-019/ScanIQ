@@ -12,11 +12,9 @@ import {
   Star,
   Briefcase,
   ArrowRight,
-  ShieldCheck,
   Calendar,
-  Layers,
 } from "lucide-react";
-import type { InvestigationCase, RiskLevel } from "@/lib/scan/types";
+import type { InvestigationCase } from "@/lib/scan/types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SeverityBadge } from "@/components/investigation/CyberBadges";

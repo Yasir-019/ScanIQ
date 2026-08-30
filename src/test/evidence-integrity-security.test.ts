@@ -5,7 +5,8 @@ import { normalizeAndAnalyzeUrl } from "@/lib/investigation/url-normalizer";
 import { analyzePayload } from "@/lib/investigation/payload-analyzer";
 import { investigationEngine } from "@/lib/investigation/engine";
 import { useSettings } from "@/lib/settings";
-import type { InvestigationFinding, ScanRecord } from "@/lib/investigation/types";
+import type { InvestigationFinding } from "@/lib/investigation/types";
+import type { ScanRecord } from "@/lib/scan/types";
 
 describe("Phase 6: Evidence Integrity, Detection Calibration & Security Hardening", () => {
   beforeEach(() => {
@@ -138,7 +139,7 @@ describe("Phase 6: Evidence Integrity, Detection Calibration & Security Hardenin
 
     it("treats alternate development ports (e.g. 8080) as informational, not high risk", () => {
       const url = "http://192.168.1.50:8080/dashboard";
-      const { result, findings } = normalizeAndAnalyzeUrl(url);
+      const { findings } = normalizeAndAnalyzeUrl(url);
 
       const portFinding = findings.find((f) => f.finding.includes(":8080"));
       expect(portFinding).toBeDefined();

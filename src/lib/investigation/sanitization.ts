@@ -1,12 +1,3 @@
-const SECRET_PATTERNS = [
-  // Generic API Keys & Tokens
-  /(?:api[_-]?key|apikey|bearer|secret|token|password|auth[_-]?token)["']?\s*[:=]\s*["']?([a-zA-Z0-9_\-.]{8,})["']?/gi,
-  // URL User:Pass credentials
-  /([a-zA-Z][a-zA-Z0-9+.-]*:\/\/)([^:\s@/]+):([^@\s/]+)@/g,
-  // VirusTotal / URLScan / Generic Hex/Base64 keys
-  /\b[0-9a-f]{64}\b/gi,
-];
-
 /**
  * Scans a string and redacts any potential API keys, passwords, or tokens with [REDACTED].
  */

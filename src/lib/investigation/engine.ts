@@ -101,8 +101,8 @@ export class InvestigationEngine {
           investigationId: invId,
           action: "provider_queried",
           provider: res.providerName,
-          target: res.target,
-          timestamp: res.timestamp,
+          target: res.target.value,
+          timestamp: res.queriedAt,
         });
       } else if (res.status === "skipped" || res.status === "not_configured") {
         provenanceLog.push({
@@ -110,8 +110,8 @@ export class InvestigationEngine {
           investigationId: invId,
           action: "provider_skipped",
           provider: res.providerName,
-          target: res.target,
-          timestamp: res.timestamp,
+          target: res.target.value,
+          timestamp: res.queriedAt,
           details: res.error || "Provider unconfigured or disabled by user preference",
         });
       } else if (res.status === "error" || res.status === "rate_limited") {
@@ -120,8 +120,8 @@ export class InvestigationEngine {
           investigationId: invId,
           action: "provider_failed",
           provider: res.providerName,
-          target: res.target,
-          timestamp: res.timestamp,
+          target: res.target.value,
+          timestamp: res.queriedAt,
           details: res.error,
         });
       }

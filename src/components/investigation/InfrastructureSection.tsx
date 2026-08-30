@@ -1,11 +1,8 @@
-import React from "react";
 import {
   Network,
   Server,
   MapPin,
   Building2,
-  Shield,
-  Layers,
   ArrowRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
