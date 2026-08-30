@@ -45,9 +45,9 @@ const nodeTypeMeta: Record<
 };
 
 export function InvestigationGraphViewer({ synthesis }: InvestigationGraphViewerProps) {
-  const nodes = synthesis?.graph?.nodes || [];
-  const edges = synthesis?.graph?.edges || [];
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(nodes[0]?.id || null);
+  const nodes = useMemo(() => synthesis?.graph?.nodes || [], [synthesis?.graph?.nodes]);
+  const edges = useMemo(() => synthesis?.graph?.edges || [], [synthesis?.graph?.edges]);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [filterQuery, setFilterQuery] = useState("");
 
   const filteredNodes = useMemo(() => {

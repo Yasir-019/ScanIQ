@@ -36,8 +36,9 @@ export function EvidenceExplorer({ findings }: EvidenceExplorerProps) {
       .filter((f) => {
         // Severity filter
         if (severityFilter !== "all") {
-          if (severityFilter === "informational" && f.severity !== "benign" && (f as any).severity !== "informational") return false;
-          if (severityFilter !== "informational" && f.severity !== severityFilter) return false;
+          const sev = f.severity as string;
+          if (severityFilter === "informational" && sev !== "benign" && sev !== "informational") return false;
+          if (severityFilter !== "informational" && sev !== severityFilter) return false;
         }
 
         // Nature filter

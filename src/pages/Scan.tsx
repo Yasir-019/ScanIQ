@@ -345,42 +345,45 @@ export default function ScanScreen() {
   };
 
   // Image Processing
-  const processImageFile = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      setImageError("Please select a valid image file (PNG, JPEG, WebP, GIF, SVG, BMP).");
-      return;
-    }
-
-    setImageFileName(file.name);
-    setImageError(null);
-    setIsDecodingImage(true);
-
-    try {
-      const svc = getScannerService();
-      const res = await svc.scanFile(file);
-
-      if (!res) {
-        setImageError(
-          t(
-            "scan.imageDecodeFailed",
-            "No readable QR code or barcode found in this image. Ensure the code has high contrast and is not cropped.",
-          ),
-        );
-        toast.error(t("scan.noCodeFound", "No readable code found in image"));
-      } else {
-        toast.success(t("scan.imageDecodeSuccess", "Barcode detected and decoded"));
-        await handleResult(res.content, res.format);
+  const processImageFile = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith("image/")) {
+        setImageError("Please select a valid image file (PNG, JPEG, WebP, GIF, SVG, BMP).");
+        return;
       }
-    } catch (err) {
-      console.error("[ScanScreen] Image decode error:", err);
-      setImageError(
-        t("scan.imageScanFailed", "Failed to parse barcode from image file."),
-      );
-      toast.error(t("scan.imageScanFailed", "Failed to parse barcode from image"));
-    } finally {
-      setIsDecodingImage(false);
-    }
-  };
+
+      setImageFileName(file.name);
+      setImageError(null);
+      setIsDecodingImage(true);
+
+      try {
+        const svc = getScannerService();
+        const res = await svc.scanFile(file);
+
+        if (!res) {
+          setImageError(
+            t(
+              "scan.imageDecodeFailed",
+              "No readable QR code or barcode found in this image. Ensure the code has high contrast and is not cropped.",
+            ),
+          );
+          toast.error(t("scan.noCodeFound", "No readable code found in image"));
+        } else {
+          toast.success(t("scan.imageDecodeSuccess", "Barcode detected and decoded"));
+          await handleResult(res.content, res.format);
+        }
+      } catch (err) {
+        console.error("[ScanScreen] Image decode error:", err);
+        setImageError(
+          t("scan.imageScanFailed", "Failed to parse barcode from image file."),
+        );
+        toast.error(t("scan.imageScanFailed", "Failed to parse barcode from image"));
+      } finally {
+        setIsDecodingImage(false);
+      }
+    },
+    [t, handleResult],
+  );
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -449,7 +452,7 @@ export default function ScanScreen() {
 
     window.addEventListener("paste", handleGlobalPaste);
     return () => window.removeEventListener("paste", handleGlobalPaste);
-  }, [scanMode]);
+  }, [scanMode, processImageFile]);
 
   // Paste / Enter form actions
   const handlePasteClipboardText = async () => {

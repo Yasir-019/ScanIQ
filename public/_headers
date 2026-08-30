@@ -1,0 +1,29 @@
+# ScanIQ Production Security Headers (Cloudflare Pages / Netlify)
+# OWASP ASVS 5.0 V3.4 (V3.4.1 - V3.4.8) Browser Security Mechanism Headers
+
+/*
+  # V3.4.1 Strict-Transport-Security (HSTS)
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  
+  # V3.4.3 Content-Security-Policy & V3.4.6 frame-ancestors
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https: wss:; media-src 'self' blob:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none';
+  
+  # V3.4.4 X-Content-Type-Options
+  X-Content-Type-Options: nosniff
+  
+  # V3.4.5 Referrer-Policy
+  Referrer-Policy: strict-origin-when-cross-origin
+  
+  # V3.4.8 Cross-Origin-Opener-Policy & Permissions Policy
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=()
+  X-Frame-Options: DENY
+
+# Cache static assets immutably
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Service worker must revalidate
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate

@@ -1,62 +1,101 @@
-# ScanIQ architecture
+# ScanIQ Architecture & Technical Design
 
-## Layers
+ScanIQ is an open-source, privacy-first, client-side QR/barcode OSINT (Open Source Intelligence) and cybersecurity investigation tool.
+
+---
+
+## 1. System Pipeline
 
 ```text
-camera / image / manual input
-        v
-  scanner-service        decode -> raw payload + format
-        v
-  scan/parser            classify content type + structured fields
-        v
-  osint/buildArtifact    normalize + decompose (URL parts, query, host)
-        v
-  osint/investigate      run offline analyzer registry
-        v
-  osint/scoreFindings    weighted, explainable risk score
-        v
-  UI: investigation report + local case history (Dexie)
+  ┌─────────────────────────────────────────────────────────────┐
+  │                   1. Multi-Input Ingestion                  │
+  │     [Optical Camera]  │  [Image Dropzone]  │  [Paste/Text]  │
+  └──────────────────────────────┬──────────────────────────────┘
+                                 │
+                                 ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │                 2. Safe Client-Side Decoding                │
+  │         ZXing Browser Multi-Format Decoder (In-Memory)      │
+  └──────────────────────────────┬──────────────────────────────┘
+                                 │
+                                 ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │            3. Content Classification & Extraction           │
+  │ (URL, Domain, IP, Wi-Fi, vCard, Crypto, Phone, Mailto, GS1) │
+  └──────────────────────────────┬──────────────────────────────┘
+                                 │
+                                 ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │             4. Investigation Engine Orchestration           │
+  │  ┌───────────────────────┐       ┌───────────────────────┐  │
+  │  │ Local Payload/Entropy │       │ URL/Domain Heuristics │  │
+  │  └───────────────────────┘       └───────────────────────┘  │
+  │  ┌───────────────────────────────────────────────────────┐  │
+  │  │   Opt-In Provider Orchestrator (Zero Outbound By Def) │  │
+  │  │   (Cloudflare DoH, RDAP, crt.sh, IPinfo, VirusTotal,  │  │
+  │  │    AbuseIPDB, URLScan, SafeBrowsing, Qualys SSL)      │  │
+  │  └───────────────────────────────────────────────────────┘  │
+  └──────────────────────────────┬──────────────────────────────┘
+                                 │
+                                 ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │     5. Correlation, Graph Synthesis & Contradiction Engine  │
+  │    (Entity Deduplication, Freshness Tracking, Conflicts)    │
+  └──────────────────────────────┬──────────────────────────────┘
+                                 │
+                                 ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │           6. Deterministic Risk & Confidence Engine         │
+  │          (0-100 Score, Severity Caps, Confidence %)         │
+  └──────────────────────────────┬──────────────────────────────┘
+                                 │
+                                 ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │             7. Presentation & Storage Persistence           │
+  │ [Dexie Cases DB] │ [Investigation Workspace] │ [Sanitized Export]
+  └─────────────────────────────────────────────────────────────┘
 ```
 
-## Modules
+---
+
+## 2. Core Modules & Responsibilities
 
 | Path | Responsibility |
-| --- | --- |
-| `src/lib/scanner-service.ts` | Camera lifecycle, torch, zoom, file decoding. No analysis. |
-| `src/lib/scan/parser.ts` | Content-type classification and field extraction. |
-| `src/lib/osint/types.ts` | Domain model: `Artifact`, `Finding`, `RiskScore`, `Investigation`, `Analyzer`, `IntelProvider`. |
-| `src/lib/osint/analyzers.ts` | Analyzer registry, artifact builder, scoring. Pure and offline. |
-| `src/lib/url-safety.ts` | Legacy URL heuristics, wrapped by the `url-heuristics` analyzer. |
-| `src/lib/db.ts` | Dexie case store. Unlimited, local, user-clearable. |
-| `src/lib/settings.ts` | Zustand settings. Privacy-hostile options default to off. |
+| :--- | :--- |
+| `src/lib/scanner-service.ts` | Camera lifecycle, torch, zoom, file decoding via `@zxing/browser`. |
+| `src/lib/scan/parser.ts` | Content classification (URL, Wi-Fi, vCard, crypto, email, phone, GS1) and safe field extraction. |
+| `src/lib/investigation/engine.ts` | Top-level investigation orchestrator coordinating local analyzers and threat providers. |
+| `src/lib/investigation/payload-analyzer.ts` | Shannon entropy calculation, character distribution, dangerous URI protocols, embedded credentials. |
+| `src/lib/investigation/url-normalizer.ts` | RFC 3986 URL parsing, Punycode/IDN homoglyph detection, raw IP host analysis, non-standard ports. |
+| `src/lib/investigation/url-heuristics.ts` | Known shorteners, typosquatting, brand impersonation, dangerous file extensions (`.exe`, `.apk`, `.dmg`). |
+| `src/lib/investigation/domain-analyzer.ts` | Domain complexity, TLD reputation heuristics, Levenshtein distance brand matching. |
+| `src/lib/investigation/redirect-analyzer.ts` | Headless redirect chain tracking, protocol downgrade detection, cross-domain forwarding. |
+| `src/lib/investigation/dns-analyzer.ts` | DNS record modeling, CAA record validation, dangling CNAME checks. |
+| `src/lib/investigation/synthesizer.ts` | Multi-hop graph generation (`nodes`, `edges`), entity correlation, and contradiction detection. |
+| `src/lib/investigation/risk-engine.ts` | Deterministic 0-100 risk scoring with explicit severity caps and independent confidence calculation. |
+| `src/lib/investigation/providers/` | Pluggable, provider-agnostic OSINT adapters (DoH, RDAP, crt.sh, IPinfo, VirusTotal, AbuseIPDB, URLScan). |
+| `src/lib/investigation/sanitization.ts` | Redacts sensitive credentials, private keys, and user tokens during report exports. |
+| `src/lib/db.ts` | Dexie IndexedDB persistence (`scans`, `cases`, `investigations`). |
+| `src/lib/settings.ts` | Zustand store managing theme, language, and opt-in intelligence toggles. |
 
-## Analyzer contract
+---
 
-An analyzer is a pure function over an `Artifact`:
+## 3. Threat Intelligence Provider Architecture
 
-- must not perform network, storage, or clipboard I/O;
-- returns zero or more `Finding`s, each with `category`, `severity`, `title`, `rationale`,
-  and — where possible — the exact `evidence` string;
-- may declare `appliesTo` content types; omitting it means "all".
+All external intelligence lookups implement the `BaseIntelligenceProvider` interface:
 
-Add one by appending to `ANALYZERS` in `src/lib/osint/analyzers.ts`.
+* **Opt-In Requirement:** Outbound queries are strictly disabled by default and require explicit user consent (`externalLookupsOptedIn`).
+* **Granular Controls:** Each provider can be individually enabled or disabled in the **Sources** catalog.
+* **Credential Isolation:** API keys are stored in client-side LocalStorage / Zustand and never transmitted to ScanIQ servers.
+* **Resilience:** Upstream provider failures, timeouts, and rate limits fail gracefully without breaking the local investigation.
 
-## Scoring
+---
 
-Severity weights: `info 0`, `low 8`, `medium 20`, `high 35`, `critical 60`.
-The score is the capped sum of contributions, retained per finding in
-`RiskScore.contributions` so the UI can show exactly why a verdict was reached.
+## 4. Evidence & Risk Integrity Principles
 
-Verdict thresholds: `>= 60 malicious`, `>= 25 suspicious`, `> 0 notable`, otherwise `clean`.
+ScanIQ is designed with evidence integrity and provenance principles aligned with applicable **NIST SP 800-61 Rev. 3** incident-response guidance:
 
-## Online enrichment
-
-`IntelProvider` is the only sanctioned network surface. Providers are opt-in
-(`settings.onlineEnrichment`), must declare `dataLeavingDevice`, and must fail closed when
-offline. No provider ships enabled.
-
-## Non-goals
-
-- Accounts, cloud sync, or server-side storage.
-- Paid tiers or feature gating.
-- Automatic execution of scanned payloads.
+1. **Observed Fact vs Heuristic vs External Intel:** Every finding preserves its distinct evidence nature.
+2. **Deterministic & Explainable:** Scores are calculated via a transparent, weighted formula with explicit evidence links.
+3. **Inspection-First:** Decoded URLs, scripts, and payloads are treated as untrusted data and never automatically visited or executed.
+4. **Zero Server Dependency:** Case history, investigation reports, and notes reside 100% locally on the user's device.

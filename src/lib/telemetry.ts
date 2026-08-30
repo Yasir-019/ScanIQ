@@ -21,9 +21,10 @@ class TelemetryService {
   private isEnabled(): boolean {
     try {
       const state = useSettings.getState();
-      return state.telemetryEnabled && import.meta.env.VITE_TELEMETRY_ENABLED !== "false";
+      const envEnabled = import.meta.env.VITE_TELEMETRY_ENABLED === "true";
+      return Boolean(state?.telemetryEnabled && envEnabled);
     } catch {
-      return true;
+      return false;
     }
   }
 
