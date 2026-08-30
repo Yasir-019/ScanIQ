@@ -30,9 +30,11 @@ import {
 } from "@/lib/scanner-service";
 import { parseScanContent } from "@/lib/scan/parser";
 import { db, saveNewCaseForScan, pruneCases } from "@/lib/db";
-import type { InvestigationCase, ScanRecord } from "@/lib/scan/types";
+import type { InvestigationCase, ScanRecord, InvestigationReport } from "@/lib/scan/types";
+import type { InvestigationFinding } from "@/lib/investigation/types";
 import { investigationEngine } from "@/lib/investigation";
 import { ResultSheet } from "@/components/ResultSheet";
+import { ScanAnalysisResult } from "@/components/investigation/ScanAnalysisResult";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -80,6 +82,12 @@ export default function ScanScreen() {
   // 1. Core mode state — Default is IMAGE mode (privacy-first, no camera permission)
   const [scanMode, setScanMode] = useState<ScanMode>("image");
   const [result, setResult] = useState<ScanRecord | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<{
+    scan: ScanRecord;
+    report: InvestigationReport;
+    findings: InvestigationFinding[];
+    caseId?: string;
+  } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // 2. Camera mode state — Default state is "ready" (explicit user action required to start)
@@ -186,7 +194,7 @@ export default function ScanScreen() {
         }
 
         // Run modular investigation engine
-        const { report: inv } = await investigationEngine.runInvestigation(record, c.id);
+        const { report: inv, findings } = await investigationEngine.runInvestigation(record, c.id);
         await db.investigations.put(inv).catch(() => undefined);
 
         const finalRiskOverall = inv.finalRisk.overall;
@@ -215,6 +223,12 @@ export default function ScanScreen() {
 
         scanFeedback();
         setResult(record);
+        setAnalysisResult({
+          scan: record,
+          report: inv,
+          findings,
+          caseId: c.id,
+        });
 
         if (safetyStatus === "malicious" || safetyStatus === "suspicious") {
           toast.warning(
@@ -595,8 +609,22 @@ export default function ScanScreen() {
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto pb-10">
-      {/* 1. Policy & Privacy Banner */}
-      <div className="p-3.5 sm:p-4 rounded-3xl border border-border bg-card shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden">
+      {analysisResult ? (
+        <ScanAnalysisResult
+          scan={analysisResult.scan}
+          report={analysisResult.report}
+          findings={analysisResult.findings}
+          caseId={analysisResult.caseId}
+          onScanAnother={() => {
+            setAnalysisResult(null);
+            setResult(null);
+            handleClearImage();
+          }}
+        />
+      ) : (
+        <>
+          {/* 1. Policy & Privacy Banner */}
+          <div className="p-3.5 sm:p-4 rounded-3xl border border-border bg-card shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0 mt-0.5 sm:mt-0">
             <Radio className="h-5 w-5" />
@@ -1291,6 +1319,8 @@ export default function ScanScreen() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
 
       {/* 4. Multiple Codes Selection Dialog */}
