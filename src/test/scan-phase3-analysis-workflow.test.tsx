@@ -72,6 +72,9 @@ describe("ScanIQ Community — Phase 3: Unified Scan & Analysis Workflow", () =>
       overall: "high",
       numeric: 74,
       confidence: 90,
+      verdict: "High Risk",
+      explanation: "High risk url indicators",
+      evidence: [],
     },
     domainIntel: {
       nameservers: ["ns1.cloudflare.com"],
@@ -87,6 +90,8 @@ describe("ScanIQ Community — Phase 3: Unified Scan & Analysis Workflow", () =>
       numeric: 74,
       confidence: 90,
       verdict: "High Risk: Obfuscated authentication token & suspicious TLD",
+      explanation: "Multiple suspicious heuristic indicators flagged",
+      evidence: [],
       primaryDrivers: [
         "Embedded authentication credentials in URL query parameter",
         "Suspicious TLD '.xyz' commonly associated with credential phishing",
