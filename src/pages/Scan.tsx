@@ -7,8 +7,8 @@ import {
   ImageUp,
   Keyboard,
   Camera,
+  CameraOff,
   Settings,
-  ShieldAlert,
   ShieldCheck,
   Clipboard,
   Radio,
@@ -20,6 +20,8 @@ import {
   Layers,
   CornerDownLeft,
   X,
+  Play,
+  Trash2,
 } from "lucide-react";
 import {
   getScannerService,
@@ -51,11 +53,13 @@ import { cn } from "@/lib/utils";
 const newId = () =>
   crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
 
-type ScanMode = "camera" | "image" | "paste";
+type ScanMode = "image" | "camera" | "paste";
 
 type CameraState =
+  | "ready"
   | "loading"
   | "active"
+  | "stopped"
   | "denied"
   | "denied-permanent"
   | "unavailable"
@@ -68,29 +72,38 @@ export default function ScanScreen() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const dropzoneRef = useRef<HTMLDivElement | null>(null);
   const lastResultRef = useRef<{ content: string; at: number } | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+  const tRef = useRef(t);
+  tRef.current = t;
 
-  // Core mode state
-  const [scanMode, setScanMode] = useState<ScanMode>("camera");
+  // 1. Core mode state — Default is IMAGE mode (privacy-first, no camera permission)
+  const [scanMode, setScanMode] = useState<ScanMode>("image");
   const [result, setResult] = useState<ScanRecord | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Camera mode state
-  const [cameraState, setCameraState] = useState<CameraState>("loading");
+  // 2. Camera mode state — Default state is "ready" (explicit user action required to start)
+  const [cameraState, setCameraState] = useState<CameraState>("ready");
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [torch, setTorch] = useState(false);
   const [torchAvail, setTorchAvail] = useState(false);
   const [zoomCaps, setZoomCaps] = useState<ZoomCapabilities | null>(null);
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const [, setRetryCount] = useState(0);
 
-  // Image mode state
+  // 3. Image mode state
   const [isDragging, setIsDragging] = useState(false);
   const [isDecodingImage, setIsDecodingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [imageFileName, setImageFileName] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [imageFileMeta, setImageFileMeta] = useState<{
+    name: string;
+    size: number;
+    type: string;
+  } | null>(null);
   const [multipleCodes, setMultipleCodes] = useState<ScannerResult[] | null>(null);
 
-  // Paste / Enter mode state
+  // 4. Paste / Enter mode state
   const [pasteInput, setPasteInput] = useState("");
   const [pasteError, setPasteError] = useState<string | null>(null);
 
@@ -102,20 +115,31 @@ export default function ScanScreen() {
     onTouchEnd,
   } = usePinchToZoom(zoomCaps);
 
-  const mountedRef = useRef(true);
-  const tRef = useRef(t);
-  tRef.current = t;
+  // Cleanup object URLs when preview changes or unmounts
+  const cleanupPreviewUrl = useCallback(() => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
+  }, []);
 
+  useEffect(() => {
+    return () => {
+      cleanupPreviewUrl();
+    };
+  }, [cleanupPreviewUrl]);
+
+  // Navigate to full investigation dossier
   const openInvestigation = useCallback(
-    (invId: string) => {
-      navigate(`/investigation/${invId}`);
+    (investigationId: string) => {
+      navigate(`/investigation/${investigationId}`);
     },
     [navigate],
   );
 
-  // Converged investigation entrypoint
+  // Unified Downstream Pipeline: Decode -> Local Inspection -> Case Creation -> Threat Analysis
   const handleResult = useCallback(
-    async (content: string, format: ScanRecord["format"]) => {
+    async (content: string, format: ScanRecord["format"] = "QR_CODE") => {
       const now = Date.now();
       if (
         lastResultRef.current &&
@@ -126,10 +150,17 @@ export default function ScanScreen() {
       }
       lastResultRef.current = { content, at: now };
 
+      // Pause camera if running
+      getScannerService().stop();
+      if (scanMode === "camera") {
+        setCameraState("stopped");
+      }
+
       setIsProcessing(true);
       try {
         const parsed = parseScanContent(content, format);
         telemetry.trackEvent("scan_completed", { format, type: parsed.type });
+
         const record: ScanRecord = {
           id: newId(),
           content,
@@ -170,6 +201,7 @@ export default function ScanScreen() {
 
         record.safetyStatus = safetyStatus;
         record.investigationId = inv.id;
+
         await db.scans.put(record).catch(() => undefined);
         await db.cases
           .update(c.id, {
@@ -185,58 +217,68 @@ export default function ScanScreen() {
         setResult(record);
 
         if (safetyStatus === "malicious" || safetyStatus === "suspicious") {
-          toast(
-            safetyStatus === "malicious"
-              ? t("scan.riskCritical", "Threat detected — open investigation")
-              : t("scan.riskSuspicious", "Suspicious payload — review findings"),
-            {
-              icon: <ShieldAlert className="h-4 w-4" />,
-              action: {
-                label: t("scan.openInvestigation", "Investigate"),
-                onClick: () => openInvestigation(inv.id),
-              },
-            },
+          toast.warning(
+            tRef.current(
+              "scan.threatDetected",
+              "Inspection flagged indicators — review investigation dossier",
+            ),
+          );
+        } else {
+          toast.success(
+            tRef.current(
+              "scan.investigationReady",
+              "Artifact inspected and case dossier initialized",
+            ),
           );
         }
-      } catch (e) {
-        console.error("[ScanScreen] handleResult error:", e);
+      } catch (err) {
+        console.error("[ScanScreen] Processing error:", err);
         toast.error(
-          tRef.current("errors.storageFailed", "Failed to process scan record"),
+          tRef.current(
+            "scan.analysisFailed",
+            "Failed to complete investigation pipeline",
+          ),
         );
       } finally {
         setIsProcessing(false);
       }
     },
-    [t, openInvestigation],
+    [scanMode],
   );
 
-  // Camera Management
+  // Explicit Camera Start Handler
   const startCamera = useCallback(async () => {
-    if (!mountedRef.current || scanMode !== "camera") return;
+    if (!mountedRef.current) return;
     const svc = getScannerService();
     svc.stop();
     setCameraState("loading");
     setErrorDetail(null);
 
     try {
+      // Check permissions if supported
       try {
-        const permStatus = await navigator.permissions.query({
-          name: "camera" as PermissionName,
-        });
-        if (permStatus.state === "denied") {
-          setCameraState("denied-permanent");
-          return;
+        if (navigator.permissions && navigator.permissions.query) {
+          const permStatus = await navigator.permissions.query({
+            name: "camera" as PermissionName,
+          });
+          if (permStatus.state === "denied") {
+            setCameraState("denied-permanent");
+            return;
+          }
         }
       } catch {
-        /* permissions API not supported */
+        /* permissions API query not supported in some browsers */
       }
 
+      // Check device availability
       try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const hasCamera = devices.some((d) => d.kind === "videoinput");
-        if (!hasCamera) {
-          setCameraState("unavailable");
-          return;
+        if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const hasCamera = devices.some((d) => d.kind === "videoinput");
+          if (!hasCamera && devices.length > 0) {
+            setCameraState("unavailable");
+            return;
+          }
         }
       } catch {
         /* enumerateDevices not supported */
@@ -244,7 +286,7 @@ export default function ScanScreen() {
 
       if (!videoRef.current || !mountedRef.current) {
         setCameraState("error");
-        setErrorDetail("Video element not ready");
+        setErrorDetail("Video preview element not ready");
         return;
       }
 
@@ -264,7 +306,7 @@ export default function ScanScreen() {
         const caps = svc.getZoomCapabilities();
         setZoomCaps(caps);
         if (caps) applyZoom(caps.min);
-      }, 600);
+      }, 500);
     } catch (e) {
       if (!mountedRef.current) return;
       const msg = e instanceof Error ? e.message : String(e);
@@ -291,7 +333,7 @@ export default function ScanScreen() {
         setErrorDetail(
           tRef.current(
             "scan.cameraInitFailedHelp",
-            "Camera hardware is currently in use by another app.",
+            "Camera hardware is currently in use by another application.",
           ),
         );
       } else {
@@ -299,28 +341,34 @@ export default function ScanScreen() {
         setErrorDetail(msg);
       }
     }
-  }, [handleResult, applyZoom, scanMode]);
+  }, [handleResult, applyZoom]);
 
-  // Lifecycle when mode or result changes
+  // Explicit Camera Stop Handler
+  const stopCamera = useCallback(() => {
+    getScannerService().stop();
+    setTorch(false);
+    setTorchAvail(false);
+    setZoomCaps(null);
+    setCameraState("stopped");
+  }, []);
+
+  // Mode switching & Component unmount lifecycle
   useEffect(() => {
     mountedRef.current = true;
 
-    if (scanMode === "camera" && !result) {
-      startCamera();
-    } else {
+    // When switching away from camera, ensure tracks are stopped
+    if (scanMode !== "camera") {
       getScannerService().stop();
-      if (scanMode === "camera" && result) {
-        setCameraState("loading");
-      }
+      setCameraState("ready");
     }
 
     const onVisibility = () => {
       if (!mountedRef.current) return;
       if (document.hidden) {
         getScannerService().stop();
-        if (scanMode === "camera") setCameraState("loading");
-      } else if (scanMode === "camera" && !result) {
-        startCamera();
+        if (scanMode === "camera" && cameraState === "active") {
+          setCameraState("ready");
+        }
       }
     };
     document.addEventListener("visibilitychange", onVisibility);
@@ -330,9 +378,12 @@ export default function ScanScreen() {
       document.removeEventListener("visibilitychange", onVisibility);
       getScannerService().stop();
     };
-  }, [startCamera, retryCount, result, scanMode]);
+  }, [scanMode, cameraState]);
 
-  const retryCamera = () => setRetryCount((c) => c + 1);
+  const retryCamera = () => {
+    setRetryCount((c) => c + 1);
+    startCamera();
+  };
 
   const toggleTorch = async () => {
     try {
@@ -344,17 +395,32 @@ export default function ScanScreen() {
     }
   };
 
-  // Image Processing
+  // Image File Processing
   const processImageFile = useCallback(
     async (file: File) => {
-      if (!file.type.startsWith("image/")) {
-        setImageError("Please select a valid image file (PNG, JPEG, WebP, GIF, SVG, BMP).");
+      if (!file || !file.type.startsWith("image/")) {
+        setImageError(
+          t(
+            "scan.imageInvalidType",
+            "Please select a valid image file (PNG, JPEG, WebP, GIF, SVG, BMP).",
+          ),
+        );
+        toast.error(t("scan.imageInvalidType", "Invalid file format"));
         return;
       }
 
-      setImageFileName(file.name);
-      setImageError(null);
+      cleanupPreviewUrl();
+      const previewUrl = URL.createObjectURL(file);
+      previewUrlRef.current = previewUrl;
+      setImagePreviewUrl(previewUrl);
+      setImageFileMeta({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
+
       setIsDecodingImage(true);
+      setImageError(null);
 
       try {
         const svc = getScannerService();
@@ -369,90 +435,124 @@ export default function ScanScreen() {
           );
           toast.error(t("scan.noCodeFound", "No readable code found in image"));
         } else {
-          toast.success(t("scan.imageDecodeSuccess", "Barcode detected and decoded"));
+          toast.success(
+            t("scan.imageDecodeSuccess", "Barcode detected and decoded"),
+          );
           await handleResult(res.content, res.format);
         }
       } catch (err) {
         console.error("[ScanScreen] Image decode error:", err);
         setImageError(
-          t("scan.imageScanFailed", "Failed to parse barcode from image file."),
+          t(
+            "scan.imageScanFailed",
+            "Failed to parse barcode from image file.",
+          ),
         );
-        toast.error(t("scan.imageScanFailed", "Failed to parse barcode from image"));
+        toast.error(
+          t("scan.imageScanFailed", "Failed to parse barcode from image"),
+        );
       } finally {
         setIsDecodingImage(false);
       }
     },
-    [t, handleResult],
+    [t, handleResult, cleanupPreviewUrl],
   );
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) processImageFile(file);
-    e.target.value = "";
-  };
+  const handleClearImage = useCallback(() => {
+    cleanupPreviewUrl();
+    setImagePreviewUrl(null);
+    setImageFileMeta(null);
+    setImageError(null);
+    if (fileRef.current) {
+      fileRef.current.value = "";
+    }
+  }, [cleanupPreviewUrl]);
 
-  const handleDragOver = (e: React.DragEvent) => {
+  // Drag & Drop handlers
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) processImageFile(file);
-  };
 
-  const handlePasteScreenshot = async () => {
-    try {
-      const items = await navigator.clipboard.read();
-      let foundImage = false;
-      for (const item of items) {
-        for (const type of item.types) {
-          if (type.startsWith("image/")) {
-            const blob = await item.getType(type);
-            const file = new File([blob], `pasted-image-${Date.now()}.${type.split("/")[1] || "png"}`, {
-              type,
-            });
-            await processImageFile(file);
-            foundImage = true;
-            break;
-          }
-        }
-        if (foundImage) break;
-      }
-
-      if (!foundImage) {
-        toast.info("No image found in clipboard. Copy a screenshot or image first.");
-      }
-    } catch {
-      toast.info("Clipboard access restricted. Use Ctrl+V (Cmd+V) on the dropzone instead.");
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      await processImageFile(file);
     }
   };
 
-  // Window-level paste listener when Image or Paste mode is active
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      await processImageFile(file);
+    }
+  };
+
+  // Clipboard Paste Support (Image & Text)
+  const handlePasteScreenshot = async () => {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+      for (const item of clipboardItems) {
+        const imageType = item.types.find((type) => type.startsWith("image/"));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const file = new File([blob], "pasted-screenshot.png", {
+            type: imageType,
+          });
+          await processImageFile(file);
+          return;
+        }
+      }
+      toast.info(
+        t(
+          "scan.clipboardNoImage",
+          "No image found in clipboard. Please copy an image or take a screenshot first.",
+        ),
+      );
+    } catch {
+      toast.error(
+        t(
+          "scan.clipboardPermissionDenied",
+          "Clipboard permission denied. Please use the file picker or drag-and-drop.",
+        ),
+      );
+    }
+  };
+
+  // Global window paste listener for quick screenshot drops
   useEffect(() => {
-    const handleGlobalPaste = (e: ClipboardEvent) => {
-      if (scanMode === "image") {
-        const file = e.clipboardData?.files?.[0];
-        if (file && file.type.startsWith("image/")) {
+    const handleGlobalPaste = async (e: ClipboardEvent) => {
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+
+      if (e.clipboardData && e.clipboardData.files.length > 0) {
+        const file = e.clipboardData.files[0];
+        if (file.type.startsWith("image/")) {
           e.preventDefault();
-          processImageFile(file);
+          setScanMode("image");
+          await processImageFile(file);
         }
       }
     };
 
     window.addEventListener("paste", handleGlobalPaste);
     return () => window.removeEventListener("paste", handleGlobalPaste);
-  }, [scanMode, processImageFile]);
+  }, [processImageFile]);
 
   // Paste / Enter form actions
   const handlePasteClipboardText = async () => {
@@ -466,7 +566,9 @@ export default function ScanScreen() {
       setPasteError(null);
       toast.success("Payload pasted from clipboard");
     } catch {
-      toast.error("Clipboard permission denied. Please paste manually into the field.");
+      toast.error(
+        "Clipboard permission denied. Please paste manually into the field.",
+      );
     }
   };
 
@@ -493,16 +595,16 @@ export default function ScanScreen() {
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto pb-10">
-      {/* 1. Ethos & Policy Banner with Precise Privacy Statement */}
-      <div className="p-3.5 sm:p-4 rounded-2xl border border-border bg-card shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      {/* 1. Policy & Privacy Banner */}
+      <div className="p-3.5 sm:p-4 rounded-3xl border border-border bg-card shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0 mt-0.5 sm:mt-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0 mt-0.5 sm:mt-0">
             <Radio className="h-5 w-5" />
           </div>
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-sm font-bold text-foreground">
-                QR & Barcode OSINT Scanner
+              <h1 className="text-sm sm:text-base font-bold text-foreground">
+                QR & Barcode OSINT Workspace
               </h1>
               <Badge
                 variant="outline"
@@ -526,19 +628,42 @@ export default function ScanScreen() {
           </div>
         </div>
 
-        {/* Global Local Shield Badge */}
+        {/* Client-Side Decode Badge */}
         <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-secondary/50 text-[11px] text-muted-foreground shrink-0">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
           <span>Client-Side Decode</span>
         </div>
       </div>
 
-      {/* 2. Accessible Scan Mode Selector */}
+      {/* 2. Accessible Scan Mode Selector — IMAGE is Default */}
       <div
         role="tablist"
         aria-label={t("scan.modeSelectorAria", "Scan Input Mode")}
         className="grid grid-cols-3 gap-1.5 p-1.5 rounded-2xl border border-border bg-secondary/60 backdrop-blur-sm"
       >
+        {/* TAB 1: Image (DEFAULT) */}
+        <button
+          role="tab"
+          id="tab-image"
+          aria-selected={scanMode === "image"}
+          aria-controls="panel-image"
+          tabIndex={scanMode === "image" ? 0 : -1}
+          onClick={() => setScanMode("image")}
+          className={cn(
+            "flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            scanMode === "image"
+              ? "bg-card text-foreground shadow-sm border border-border/80 font-bold"
+              : "text-muted-foreground hover:text-foreground hover:bg-card/40",
+          )}
+        >
+          <ImageUp className="h-4 w-4 text-primary shrink-0" />
+          <span>{t("scan.modeImage", "Image")}</span>
+          <span className="hidden sm:inline-block text-[9px] font-mono px-1 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
+            Default
+          </span>
+        </button>
+
+        {/* TAB 2: Camera (Explicit Action Required) */}
         <button
           role="tab"
           id="tab-camera"
@@ -557,24 +682,7 @@ export default function ScanScreen() {
           <span>{t("scan.modeCamera", "Camera")}</span>
         </button>
 
-        <button
-          role="tab"
-          id="tab-image"
-          aria-selected={scanMode === "image"}
-          aria-controls="panel-image"
-          tabIndex={scanMode === "image" ? 0 : -1}
-          onClick={() => setScanMode("image")}
-          className={cn(
-            "flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            scanMode === "image"
-              ? "bg-card text-foreground shadow-sm border border-border/80 font-bold"
-              : "text-muted-foreground hover:text-foreground hover:bg-card/40",
-          )}
-        >
-          <ImageUp className="h-4 w-4 text-primary shrink-0" />
-          <span>{t("scan.modeImage", "Image")}</span>
-        </button>
-
+        {/* TAB 3: Paste / Enter */}
         <button
           role="tab"
           id="tab-paste"
@@ -596,162 +704,9 @@ export default function ScanScreen() {
 
       {/* 3. MODE PANELS */}
 
-      {/* MODE 1: Camera Viewfinder */}
-      {scanMode === "camera" && (
-        <div
-          role="tabpanel"
-          id="panel-camera"
-          aria-labelledby="tab-camera"
-          className="relative w-full aspect-[4/3] sm:aspect-[16/9] max-h-[520px] rounded-3xl overflow-hidden bg-black border border-border/80 shadow-card animate-fade-in"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          style={{ touchAction: zoomCaps ? "none" : "auto" }}
-        >
-          <video
-            ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover"
-            playsInline
-            muted
-            autoPlay
-          />
-
-          {cameraState === "loading" && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/85 backdrop-blur-sm">
-              <div className="flex flex-col items-center gap-3 text-center p-6">
-                <Camera className="h-10 w-10 animate-pulse text-primary" />
-                <p className="text-sm font-semibold text-foreground">
-                  Initializing Optical Scanner…
-                </p>
-                <p className="text-xs text-muted-foreground max-w-xs">
-                  Acquiring local camera stream with client-side frame processing.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {isProcessing && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/85 backdrop-blur-sm">
-              <div className="flex flex-col items-center gap-3 text-center p-6">
-                <RefreshCw className="h-9 w-9 animate-spin text-primary" />
-                <p className="text-sm font-bold text-foreground">
-                  Synthesizing Payload Intelligence…
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Running local heuristics, domain parsing, and provider orchestration.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {cameraState === "active" && (
-            <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4 pointer-events-none">
-              <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur border border-white/10">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Live Sensor Active</span>
-              </div>
-
-              {torchAvail && (
-                <button
-                  onClick={toggleTorch}
-                  aria-pressed={torch}
-                  aria-label={
-                    torch
-                      ? t("scan.torchOff", "Turn off flashlight")
-                      : t("scan.torchOn", "Turn on flashlight")
-                  }
-                  className={`pointer-events-auto rounded-full p-2.5 backdrop-blur transition border ${
-                    torch
-                      ? "bg-primary text-primary-foreground border-primary shadow-[0_0_20px_hsl(var(--primary)/0.5)]"
-                      : "bg-black/60 text-white border-white/15 hover:bg-black/80"
-                  }`}
-                >
-                  {torch ? (
-                    <Flashlight className="h-4 w-4" />
-                  ) : (
-                    <FlashlightOff className="h-4 w-4" />
-                  )}
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Viewfinder Reticle */}
-          {cameraState === "active" && (
-            <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
-              <div
-                className="scan-reticle relative h-56 w-56 sm:h-64 sm:w-64 max-w-[75vw]"
-                role="region"
-                aria-live="polite"
-                aria-label="QR and Barcode scan target viewfinder."
-              >
-                <Corner className="-left-1 -top-1" />
-                <Corner className="-right-1 -top-1 rotate-90" />
-                <Corner className="-bottom-1 -left-1 -rotate-90" />
-                <Corner className="-bottom-1 -right-1 rotate-180" />
-                <div className="scan-line absolute inset-x-2 top-0 h-0.5 animate-scan-line rounded-full" />
-              </div>
-            </div>
-          )}
-
-          {/* Zoom Slider */}
-          {cameraState === "active" && zoomCaps && (
-            <div
-              className="pointer-events-auto absolute inset-x-0 bottom-16 z-10 mx-auto flex max-w-xs items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur border border-white/10"
-              style={{ width: "min(78vw, 20rem)" }}
-            >
-              <span className="w-8 text-center text-xs font-semibold tabular-nums text-white">
-                {zoom.toFixed(1)}x
-              </span>
-              <Slider
-                value={[zoom]}
-                min={zoomCaps.min}
-                max={zoomCaps.max}
-                step={zoomCaps.step}
-                onValueChange={(v) => applyZoom(v[0])}
-                className="flex-1"
-                aria-label="Camera Zoom"
-              />
-              <span className="w-8 text-right text-xs text-white/60 tabular-nums">
-                {zoomCaps.max.toFixed(1)}x
-              </span>
-            </div>
-          )}
-
-          {/* Bottom Quick Switchers */}
-          {cameraState === "active" && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-3 z-10 flex items-center justify-center gap-2 px-4">
-              <button
-                onClick={() => setScanMode("image")}
-                className="pointer-events-auto flex h-9 items-center gap-1.5 rounded-full bg-black/70 px-3.5 text-xs font-medium text-white backdrop-blur border border-white/15 hover:bg-black/90 transition"
-              >
-                <ImageUp className="h-3.5 w-3.5" />
-                <span>Upload Image</span>
-              </button>
-
-              <button
-                onClick={() => setScanMode("paste")}
-                className="pointer-events-auto flex h-9 items-center gap-1.5 rounded-full bg-black/70 px-3.5 text-xs font-medium text-white backdrop-blur border border-white/15 hover:bg-black/90 transition"
-              >
-                <Keyboard className="h-3.5 w-3.5" />
-                <span>Enter Content</span>
-              </button>
-            </div>
-          )}
-
-          {/* Camera Error & Permission Overlay */}
-          <CameraOverlay
-            cameraState={cameraState}
-            errorDetail={errorDetail}
-            retryCamera={retryCamera}
-            onFileSelect={() => setScanMode("image")}
-            onManualInput={() => setScanMode("paste")}
-            onOpenSettings={() => setShowPermissionGuide(true)}
-          />
-        </div>
-      )}
-
-      {/* MODE 2: Image Upload & Drag-and-Drop */}
+      {/* ========================================================================= */}
+      {/* MODE 1: Image Upload & Drag-and-Drop (PRIMARY DEFAULT WORKFLOW)           */}
+      {/* ========================================================================= */}
       {scanMode === "image" && (
         <div
           role="tabpanel"
@@ -759,13 +714,14 @@ export default function ScanScreen() {
           aria-labelledby="tab-image"
           className="space-y-4 animate-fade-in"
         >
+          {/* Dropzone Card */}
           <div
             ref={dropzoneRef}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
-              "relative w-full min-h-[340px] sm:min-h-[380px] rounded-3xl border-2 border-dashed p-6 sm:p-8 flex flex-col items-center justify-center text-center transition-all bg-card/50 backdrop-blur-sm cursor-pointer group",
+              "relative w-full min-h-[360px] sm:min-h-[400px] rounded-3xl border-2 border-dashed p-6 sm:p-8 flex flex-col items-center justify-center text-center transition-all bg-card/60 backdrop-blur-sm cursor-pointer group",
               isDragging
                 ? "border-primary bg-primary/10 scale-[0.99] shadow-lg ring-4 ring-primary/20"
                 : "border-border hover:border-primary/50 hover:bg-card/80",
@@ -782,29 +738,108 @@ export default function ScanScreen() {
 
             {isDecodingImage ? (
               <div className="space-y-3 flex flex-col items-center animate-pulse">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary border border-primary/30">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary border border-primary/30 shadow-md">
                   <RefreshCw className="h-8 w-8 animate-spin" />
                 </div>
                 <h3 className="text-base font-bold text-foreground">
                   {t("scan.imageDecoding", "Decoding barcode locally…")}
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-sm">
-                  {imageFileName ? `Inspecting ${imageFileName}` : "Analyzing optical patterns in sandboxed memory."}
+                  {imageFileMeta?.name
+                    ? `Inspecting ${imageFileMeta.name} in client-side memory`
+                    : "Analyzing optical symbology in client memory without external network calls."}
                 </p>
               </div>
+            ) : imagePreviewUrl ? (
+              /* Selected Image Preview State */
+              <div
+                className="space-y-4 flex flex-col items-center max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="relative rounded-2xl overflow-hidden border border-border bg-secondary/30 shadow-md max-h-56 max-w-xs group/img">
+                  <img
+                    src={imagePreviewUrl}
+                    alt="Uploaded QR or Barcode Preview"
+                    className="w-full h-auto max-h-56 object-contain rounded-2xl"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="h-8 text-xs rounded-xl"
+                      onClick={() => fileRef.current?.click()}
+                    >
+                      <FileUp className="h-3.5 w-3.5 mr-1" />
+                      <span>Change</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="h-8 text-xs rounded-xl"
+                      onClick={handleClearImage}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      <span>Remove</span>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="font-bold text-xs sm:text-sm text-foreground truncate max-w-xs">
+                      {imageFileMeta?.name}
+                    </span>
+                    <Badge variant="outline" className="text-[10px] font-mono">
+                      {imageFileMeta?.size
+                        ? `${(imageFileMeta.size / 1024).toFixed(1)} KB`
+                        : "Image"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Click "Select another image" or drop a new file to inspect.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-4 rounded-xl text-xs font-semibold border-border hover:bg-secondary"
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    <FileUp className="h-3.5 w-3.5 mr-1.5" />
+                    <span>Select Another Image</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 px-3 rounded-xl text-xs text-muted-foreground hover:text-foreground"
+                    onClick={handleClearImage}
+                  >
+                    <X className="h-3.5 w-3.5 mr-1" />
+                    <span>Clear</span>
+                  </Button>
+                </div>
+              </div>
             ) : (
+              /* Empty / Initial State */
               <div className="space-y-4 flex flex-col items-center max-w-md">
                 <div
                   className={cn(
-                    "flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary transition-all",
-                    isDragging && "scale-110 bg-primary/20 text-primary border-primary",
+                    "flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary transition-all shadow-sm",
+                    isDragging &&
+                      "scale-110 bg-primary/20 text-primary border-primary",
                   )}
                 >
                   <UploadCloud className="h-8 w-8" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <h2 className="text-base font-bold text-foreground">
+                  <h2 className="text-base sm:text-lg font-bold text-foreground">
                     {t(
                       "scan.imageDropzonePrompt",
                       "Drag & drop an image here, or browse files",
@@ -818,12 +853,12 @@ export default function ScanScreen() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
                   <Button
                     type="button"
                     variant="default"
                     size="sm"
-                    className="h-10 px-5 rounded-xl text-xs font-semibold shadow-sm"
+                    className="h-10 px-5 rounded-xl text-xs font-semibold shadow-md bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={(e) => {
                       e.stopPropagation();
                       fileRef.current?.click();
@@ -844,16 +879,18 @@ export default function ScanScreen() {
                     }}
                   >
                     <Clipboard className="h-4 w-4 mr-1.5" />
-                    <span>{t("scan.imagePasteAction", "Paste from Clipboard")}</span>
+                    <span>
+                      {t("scan.imagePasteAction", "Paste from Clipboard")}
+                    </span>
                   </Button>
                 </div>
 
-                <div className="pt-3 border-t border-border/60 w-full flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
+                <div className="pt-3 border-t border-border/60 w-full flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
                   <Badge variant="secondary" className="text-[10px] font-mono">
                     PNG, JPEG, WebP, GIF, SVG, BMP
                   </Badge>
                   <span>·</span>
-                  <span>14 symbologies supported</span>
+                  <span>14 barcode symbologies supported</span>
                 </div>
               </div>
             )}
@@ -895,7 +932,242 @@ export default function ScanScreen() {
         </div>
       )}
 
-      {/* MODE 3: Paste / Enter Directly */}
+      {/* ========================================================================= */}
+      {/* MODE 2: Camera Viewfinder (EXPLICIT USER-INITIATED OPTICAL SCANNER)        */}
+      {/* ========================================================================= */}
+      {scanMode === "camera" && (
+        <div
+          role="tabpanel"
+          id="panel-camera"
+          aria-labelledby="tab-camera"
+          className="space-y-4 animate-fade-in"
+        >
+          {cameraState === "ready" || cameraState === "stopped" ? (
+            /* Explicit Camera Launch Panel — No automatic stream on load */
+            <div className="rounded-3xl border border-border bg-card p-6 sm:p-10 shadow-card text-center flex flex-col items-center justify-center space-y-4 min-h-[360px]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary border border-primary/30 shadow-sm">
+                <Camera className="h-8 w-8" />
+              </div>
+
+              <div className="space-y-1.5 max-w-md">
+                <h2 className="text-base sm:text-lg font-bold text-foreground">
+                  Live Optical QR & Barcode Scanner
+                </h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Scan physical QR codes and 1D/2D barcodes using your device camera. Video frames are decoded locally in real-time and are never uploaded.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <Button
+                  onClick={startCamera}
+                  size="default"
+                  className="h-11 px-6 rounded-2xl text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                >
+                  <Play className="h-4 w-4 fill-current" />
+                  <span>Start Camera</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setScanMode("image")}
+                  size="default"
+                  className="h-11 px-5 rounded-2xl text-xs font-medium border-border hover:bg-secondary"
+                >
+                  <ImageUp className="h-4 w-4 mr-1.5" />
+                  <span>Or Upload Image Instead</span>
+                </Button>
+              </div>
+
+              <div className="pt-4 border-t border-border/40 w-full max-w-sm flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Camera stream runs strictly in local memory</span>
+              </div>
+            </div>
+          ) : (
+            /* Live Camera Viewfinder Surface */
+            <div
+              className="relative w-full aspect-[4/3] sm:aspect-[16/9] max-h-[520px] rounded-3xl overflow-hidden bg-black border border-border/80 shadow-card"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              style={{ touchAction: zoomCaps ? "none" : "auto" }}
+            >
+              <video
+                ref={videoRef}
+                className="absolute inset-0 h-full w-full object-cover"
+                playsInline
+                muted
+                autoPlay
+              />
+
+              {/* Initializing / Loading Stream Spinner */}
+              {cameraState === "loading" && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/90 backdrop-blur-sm">
+                  <div className="flex flex-col items-center gap-3 text-center p-6">
+                    <Camera className="h-10 w-10 animate-pulse text-primary" />
+                    <p className="text-sm font-semibold text-foreground">
+                      Initializing Camera Sensor…
+                    </p>
+                    <p className="text-xs text-muted-foreground max-w-xs">
+                      Requesting camera access for real-time local decoding.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Intelligence Synthesis Overlay */}
+              {isProcessing && (
+                <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/85 backdrop-blur-sm">
+                  <div className="flex flex-col items-center gap-3 text-center p-6">
+                    <RefreshCw className="h-9 w-9 animate-spin text-primary" />
+                    <p className="text-sm font-bold text-foreground">
+                      Synthesizing Payload Intelligence…
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Running local heuristics, domain parsing, and provider orchestration.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Top Viewfinder Bar with Controls */}
+              {cameraState === "active" && (
+                <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4 pointer-events-none">
+                  <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur border border-white/10">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Live Sensor Active</span>
+                  </div>
+
+                  <div className="pointer-events-auto flex items-center gap-2">
+                    {torchAvail && (
+                      <button
+                        onClick={toggleTorch}
+                        aria-pressed={torch}
+                        aria-label={
+                          torch
+                            ? t("scan.torchOff", "Turn off flashlight")
+                            : t("scan.torchOn", "Turn on flashlight")
+                        }
+                        className={`rounded-full p-2.5 backdrop-blur transition border ${
+                          torch
+                            ? "bg-primary text-primary-foreground border-primary shadow-[0_0_20px_hsl(var(--primary)/0.5)]"
+                            : "bg-black/60 text-white border-white/15 hover:bg-black/80"
+                        }`}
+                      >
+                        {torch ? (
+                          <Flashlight className="h-4 w-4" />
+                        ) : (
+                          <FlashlightOff className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+
+                    <Button
+                      onClick={stopCamera}
+                      variant="destructive"
+                      size="sm"
+                      className="h-8 px-3 rounded-full text-xs font-medium gap-1.5 shadow-md"
+                    >
+                      <CameraOff className="h-3.5 w-3.5" />
+                      <span>Stop Camera</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Viewfinder Reticle */}
+              {cameraState === "active" && (
+                <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
+                  <div
+                    className="scan-reticle relative h-56 w-56 sm:h-64 sm:w-64 max-w-[75vw]"
+                    role="region"
+                    aria-live="polite"
+                    aria-label="QR and Barcode scan target viewfinder."
+                  >
+                    <Corner className="-left-1 -top-1" />
+                    <Corner className="-right-1 -top-1 rotate-90" />
+                    <Corner className="-bottom-1 -left-1 -rotate-90" />
+                    <Corner className="-bottom-1 -right-1 rotate-180" />
+                    <div className="scan-line absolute inset-x-2 top-0 h-0.5 animate-scan-line rounded-full" />
+                  </div>
+                </div>
+              )}
+
+              {/* Zoom Slider */}
+              {cameraState === "active" && zoomCaps && (
+                <div
+                  className="pointer-events-auto absolute inset-x-0 bottom-16 z-10 mx-auto flex max-w-xs items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur border border-white/10"
+                  style={{ width: "min(78vw, 20rem)" }}
+                >
+                  <span className="w-8 text-center text-xs font-semibold tabular-nums text-white">
+                    {zoom.toFixed(1)}x
+                  </span>
+                  <Slider
+                    value={[zoom]}
+                    min={zoomCaps.min}
+                    max={zoomCaps.max}
+                    step={zoomCaps.step}
+                    onValueChange={(v) => applyZoom(v[0])}
+                    className="flex-1"
+                    aria-label="Camera Zoom"
+                  />
+                  <span className="w-8 text-right text-xs text-white/60 tabular-nums">
+                    {zoomCaps.max.toFixed(1)}x
+                  </span>
+                </div>
+              )}
+
+              {/* Bottom Quick Switchers */}
+              {cameraState === "active" && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-3 z-10 flex items-center justify-center gap-2 px-4">
+                  <button
+                    onClick={() => {
+                      stopCamera();
+                      setScanMode("image");
+                    }}
+                    className="pointer-events-auto flex h-9 items-center gap-1.5 rounded-full bg-black/70 px-3.5 text-xs font-medium text-white backdrop-blur border border-white/15 hover:bg-black/90 transition"
+                  >
+                    <ImageUp className="h-3.5 w-3.5" />
+                    <span>Upload Image</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      stopCamera();
+                      setScanMode("paste");
+                    }}
+                    className="pointer-events-auto flex h-9 items-center gap-1.5 rounded-full bg-black/70 px-3.5 text-xs font-medium text-white backdrop-blur border border-white/15 hover:bg-black/90 transition"
+                  >
+                    <Keyboard className="h-3.5 w-3.5" />
+                    <span>Enter Content</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Camera Error & Permission Overlay */}
+              <CameraOverlay
+                cameraState={cameraState}
+                errorDetail={errorDetail}
+                retryCamera={retryCamera}
+                onFileSelect={() => {
+                  stopCamera();
+                  setScanMode("image");
+                }}
+                onManualInput={() => {
+                  stopCamera();
+                  setScanMode("paste");
+                }}
+                onOpenSettings={() => setShowPermissionGuide(true)}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODE 3: Paste / Enter Directly                                            */}
+      {/* ========================================================================= */}
       {scanMode === "paste" && (
         <div
           role="tabpanel"
@@ -1002,7 +1274,7 @@ export default function ScanScreen() {
                 type="button"
                 onClick={handleManualSubmit}
                 disabled={isProcessing}
-                className="h-10 px-6 rounded-xl text-xs font-semibold shadow-md flex items-center justify-center gap-2"
+                className="h-10 px-6 rounded-xl text-xs font-semibold shadow-md flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {isProcessing ? (
                   <>
@@ -1096,7 +1368,7 @@ export default function ScanScreen() {
               <ol className="mt-1 list-decimal space-y-1 pl-2 text-[11px] list-inside">
                 <li>Click the lock icon 🔒 next to the address bar.</li>
                 <li>Set Camera permission to <b>Allow</b>.</li>
-                <li>Reload this webpage.</li>
+                <li>Click "Retry Camera Access" below.</li>
               </ol>
             </div>
           </div>

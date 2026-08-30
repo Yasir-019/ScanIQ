@@ -38,7 +38,7 @@ export const useSettings = create<SettingsState>()(
       telemetryEnabled: false,
       defaultOpenDestinations: false,
       confirmBeforeOpenDestinations: true,
-      autoStartCamera: true,
+      autoStartCamera: false,
       caseLanguage: "en",
       sourceToggles: defaultSourceToggles(),
       apiKeys: {},

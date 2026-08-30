@@ -198,8 +198,9 @@ export default function PrivacySettingsScreen() {
             <SettingRow
               label={translate(
                 "privacySettings.autoStartCamera",
-                "Auto-start camera on Scan tab",
+                "Enable Camera auto-start when Camera mode is selected",
               )}
+              description="Camera access is never triggered on initial page load. When enabled, selecting the Camera mode tab will automatically request sensor startup."
               icon={Camera}
               checked={autoStartCamera}
               onCheckedChange={(v) => set({ autoStartCamera: v })}
