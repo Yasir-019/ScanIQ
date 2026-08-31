@@ -1,0 +1,46 @@
+name: ScanIQ CI & Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies (clean install)
+        run: npm ci
+
+      - name: Type checking (TypeScript Strict Mode)
+        run: npx tsc --noEmit -p tsconfig.app.json
+
+      - name: Linting check (ESLint)
+        run: npm run lint
+
+      - name: Automated test suite (Vitest)
+        run: npm test -- --run
+
+      - name: Production bundle build (Vite)
+        run: npm run build
