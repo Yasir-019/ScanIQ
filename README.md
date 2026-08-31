@@ -1,114 +1,127 @@
-# ScanIQ OSINT
+# ScanIQ Community — Open-Source Threat Intelligence & QR/Barcode OSINT Workspace
 
-Free, open-source, privacy-first QR/barcode scanner and **threat-intelligence / OSINT investigation workspace** for privacy-conscious users, cybersecurity students, researchers, and professionals.
+ScanIQ is a free, open-source, self-hosted, single-user OSINT and QR/barcode cyber investigation platform. Built for privacy-conscious security analysts, threat intelligence researchers, fraud investigators, and incident responders.
 
-## Product Mission
+---
 
-ScanIQ scans a QR or barcode **safely** (never auto-opening), then turns that payload into a structured investigation case with:
+## 🛡️ Core Principles & Privacy Model
 
-- Local-first payload & URL deconstruction, protocol & obfuscation analysis.
-- Explainable risk scoring with supporting evidence & confidence.
-- Target extraction (URLs, domains, hosts, IPs, emails, phones, product codes, IBANs).
-- User-controlled, opt-in intelligence lookups:
-  - DNS / DoH (Cloudflare by default)
-  - RDAP (domain + IP registration)
-  - ASN & hosting info (IPinfo)
-  - Geolocation (offline DB-IP or online IPinfo)
-  - Certificate Transparency (crt.sh) & TLS (Qualys SSL Labs)
-  - Redirect-chain tracing (proxied)
-  - Reputation & blocklists (URLVoid, VirusTotal, Google Safe Browsing, Phishtank, AbuseIPDB)
-  - Brand-protection & lookalike/typosquat detection
-  - GS1 product-code registration lookups
-- Structured **investigation report** per case, with findings, evidence, notes, and case retention.
-- Zero paywalls, zero Pro tiers, zero lock-in, no telemetry by default.
+- **Local-First & Zero-Telemetry**: Operates 100% locally by default with zero tracking, zero telemetry, and zero centralized database requirements.
+- **Explainable Threat Scoring**: Deterministic, evidence-backed risk analysis (0–100 score + severity categorization) distinguishing observed facts from external threat intelligence feeds.
+- **BYOK (Bring-Your-Own-Key) Architecture**: Connect your own API keys for VirusTotal, AbuseIPDB, URLScan, Google Safe Browsing, IPinfo, and URLVoid stored securely in local browser storage.
+- **Cryptographic Provenance**: Formal investigation reports calculate SHA-256 canonical integrity digests of input artifacts and report structures.
+- **Offline Resilient (PWA)**: Full local payload analysis, decoding, and IndexedDB case management work without an internet connection.
 
-## Tech Stack
+---
 
-- **Frontend:** React 19 + TypeScript, Radix UI primitives, Tailwind CSS, framer-motion, sonner toasts.
-- **Build:** Vite 7 with SWC, code-splitting, manual vendor chunks.
-- **Storage:** IndexedDB (Dexie) — cases, scans, and investigations are **stored locally on-device**.
-- **State:** Zustand (persisted settings).
-- **Scanner:** ZXing (`@zxing/browser` + ImageBarcodeReader) — 14 symbologies.
-- **i18n:** react-i18next, 8 languages (EN, HI, JA, KO, RU, UR, ZH-CN, ZH-TW).
-- **PWA:** Custom service worker (`/public/sw.js`), install prompt, offline page, Web App Manifest.
-- **Tests:** Vitest + Testing Library (config in `vitest.config.ts`, setup at `src/test/setup.ts`).
-- **Lint/Format:** ESLint 9 (typescript-eslint strict-type-checked) + Prettier (`pretty-quick`).
+## 🚀 Navigation & Application Architecture
 
-## Getting Started
+ScanIQ Community features a persistent desktop left-sidebar and mobile app shell:
 
-```powershell
-# Windows PowerShell — use npm.cmd; do not use &&
-npm.cmd install
-npm.cmd run dev       # start Vite dev server (HTTPS recommended for camera)
-npm.cmd run build     # production build -> dist/
-npm.cmd run preview   # preview production build
-npm.cmd run lint      # ESLint
-npx.cmd tsc --noEmit -p tsconfig.app.json   # TypeScript strict check
-npm.cmd run test      # Vitest (see src/**/*.test.tsx)
+1. **Scan (`/`)**: Image upload/dropzone-first inspection with explicit camera opt-in and manual paste analysis.
+2. **Cases (`/cases`)**: Multi-artifact investigation workspace with tagging, status management (`active` / `archived` / `closed`), and cross-scan correlation.
+3. **Sources (`/sources`)**: Intelligence catalog dividing capabilities into Local Analysis, Direct Network queries, and Reputation APIs.
+4. **Integrations (`/integrations`)**: BYOK secret management with credential masking, connection testing, and toggle controls.
+5. **Reports (`/reports`)**: 11-section formal cyber intelligence dossiers with Print/PDF formatting, structured JSON downloads, and Markdown export.
+6. **Settings (`/privacy-settings`)**: Retention limits, scanner controls, offline caching, and destructive data purges.
+7. **About (`/about`)**: Architecture diagrams, license details, and open-source documentation.
+
+---
+
+## 📦 Quick Start & Development
+
+### Prerequisites
+- Node.js 20+ (or Docker for containerized deployment)
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+
+```bash
+# Clone the repository
+git clone https://github.com/Yasir-019/ScanIQ.git
+cd ScanIQ
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Run automated test suites (19 test files, 126+ tests)
+npm test -- --run
+
+# Build production bundle
+npm run build
 ```
 
-The camera APIs require **HTTPS or localhost**. On a LAN mobile device, set `VITE_DEV_HOST` or `vite.config.ts` server.https.
+---
 
-## Architecture
+## 🐳 Self-Hosted Deployment Options
 
-```
-src/
-  pages/
-    Scan.tsx               # Entry: camera + paste + image → creates a Case & Investigation
-    Cases.tsx              # Private, local investigation cases
-    Sources.tsx            # Opt-in intelligence sources catalog + per-source toggle
-    PrivacySettings.tsx    # Settings, consent, case retention, destructive actions
-    Investigation.tsx      # Full investigation report (5 tabs)
-  lib/
-    investigation/         # Core modular investigation engine
-      payload-analyzer.ts  # Shannon entropy, character distribution, dangerous protocols, creds
-      url-normalizer.ts    # RFC 3986 normalization, Punycode/IDN, IP formats, port & redirect checks
-      url-heuristics.ts    # Brand impersonation, typosquatting, DGA subdomains, shorteners, dangerous files
-      domain-analyzer.ts   # Domain complexity, Levenshtein distance & homoglyph substitutions
-      redirect-analyzer.ts # Redirect chain modeling & cross-domain tracking
-      dns-analyzer.ts      # DNS records & infrastructure intelligence modeling
-      evidence-collector.ts# Deduplication, sorting, and indexing of findings
-      risk-engine.ts       # Deterministic, explainable risk scoring (0-100 & verdict)
-      engine.ts            # Top-level InvestigationEngine orchestrator
-    scan/types.ts          # Core domain types incl. InvestigationReport, RiskScoreSummary, etc.
-    osint/sources.ts       # Source catalog & per-source metadata
-    db.ts                  # Dexie schema: scans / cases / investigations
-    settings.ts            # Zustand settings w/ per-source toggles
-    scanner-service.ts, parser.ts, security.ts, url-safety.ts, feedback.ts, telemetry.ts, action-stats.ts, utils.ts
-  components/
-    AppShell.tsx           # 4-tab shell (Scan · Cases · Sources · Settings)
-    ResultSheet.tsx        # Post-scan bottom sheet with prominent "Open Investigation" CTA
-    ErrorBoundary.tsx, OfflineBanner.tsx, InstallBanner.tsx, SmartActions.tsx, SafetyWarningCard.tsx, CameraOverlay.tsx
-  hooks/
-    use-pinch-to-zoom.ts, use-network-status.ts, use-install-prompt.ts
+ScanIQ does not require any ScanIQ-owned backend infrastructure. You can deploy it completely standalone.
+
+### Option 1: Docker Compose (Recommended)
+
+```bash
+# Launch container on port 8080
+docker compose up -d
+
+# Visit in your browser
+http://localhost:8080
 ```
 
-## Opt-In External Lookups
+### Option 2: Standalone Docker
 
-No network calls leave the device unless the user has:
+```bash
+# Build the container image
+docker build -t scaniq-community .
 
-1. Toggled the global **Enable external network lookups** consent in **Privacy & Settings**, **and**
-2. Individually enabled a source in the **Sources** catalog, **and** for keyed sources, added the env var (see `.env.example`).
-
-### Available env keys
-
-```
-VITE_IPINFO_TOKEN
-VITE_URLVOID_KEY
-VITE_VIRUSTOTAL_KEY
-VITE_SAFEBROWSING_KEY
-VITE_ABUSEIPDB_KEY
-VITE_REDIRECT_PROXY_URL
+# Run container
+docker run -d -p 8080:80 --name scaniq scaniq-community
 ```
 
-Set these in `.env.local` (dev) or `.env.production` (build). Never commit secrets.
+### Option 3: Static Hosting (Vercel, Netlify, Cloudflare Pages, Nginx)
 
-## Case Retention & Privacy
+ScanIQ compiles to static HTML/JS/CSS assets in the `dist/` directory.
 
-- All data stays on-device unless a user explicitly navigates to an external link or enables networked sources.
-- Cases are silently pruned after `caseRetentionDays` (default 90 days) or at `DEFAULT_CASE_LIMIT` (500) cases, with starred cases preserved.
-- Use **Privacy & Settings → Destructive actions** to Clear all data or Reset to defaults.
+- **Vercel**: Configuration is pre-wired in `vercel.json`.
+- **Netlify / Cloudflare Pages**: SPA routing rewrites are pre-configured in `public/_redirects` and `public/_headers`.
+- **Nginx**: Production Nginx configuration with OWASP ASVS security headers is provided in `nginx.conf`.
 
-## License & Philosophy
+---
 
-Open-source under **GPL-3.0-or-later**. Always free. No paywalls. No Pro upgrades. No telemetry by default. For researchers, by researchers. See `/licenses`.
+## 🔑 BYOK Integrations
+
+ScanIQ connects to external threat intelligence providers using your own keys:
+
+| Provider | Purpose | Default Behavior |
+| :--- | :--- | :--- |
+| **VirusTotal** | Multi-engine file & domain hash reputation | BYOK (Disabled if unconfigured) |
+| **AbuseIPDB** | Crowdsourced IP abuse reports & confidence | BYOK (Disabled if unconfigured) |
+| **URLScan.io** | Automated page scan & screenshot intelligence | BYOK (Disabled if unconfigured) |
+| **Google Safe Browsing** | Phishing & malware blocklist validation | BYOK (Disabled if unconfigured) |
+| **IPinfo** | Autonomous System (ASN) & geo infrastructure | Free Anonymous tier / Optional BYOK |
+| **Cloudflare DoH** | DNS-over-HTTPS standard resource records | Direct Network (Privacy-preserving) |
+| **RDAP Directory** | Authoritative domain & IP registry data | Direct Network (Direct lookup) |
+
+---
+
+## 📄 Formal Reports & Evidence Dossiers
+
+Reports generated from investigations follow an 11-section structured hierarchy:
+1. Executive Summary & Verdict
+2. Investigation Overview & Metadata
+3. Target & Decoded Input (with SHA-256 payload hash)
+4. Risk Drivers & Mitigating Evidence
+5. Key Findings with Source Provenance
+6. Extracted Indicators of Compromise (IOCs)
+7. Intelligence Sources Coverage Matrix
+8. Evidence & Technical Details (DNS, RDAP, Entropy)
+9. Analysis Scope & Limitations
+10. Timeline & Provenance Logs
+11. Cryptographic Report Integrity Digest (SHA-256)
+
+---
+
+## 📜 License
+
+ScanIQ is free and open-source software licensed under the **GNU General Public License v3.0 (GPL-3.0-or-later)**.
+See the [LICENSE](LICENSE) file for complete terms.
