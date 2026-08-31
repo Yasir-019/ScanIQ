@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { db, DEFAULT_CASE_LIMIT } from "@/lib/db";
 import { toast } from "sonner";
 import { APP_NAME, APP_VERSION } from "@/lib/app-meta";
+import { DataStorageManager } from "@/components/settings/DataStorageManager";
 
 function SettingRow({
   label,
@@ -263,6 +264,13 @@ export default function PrivacySettingsScreen() {
               badge="Opt-in"
             />
           </div>
+        </section>
+
+        <section>
+          <h2 className="mb-2 flex items-center gap-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <Database className="h-3.5 w-3.5" /> Data & Local Storage (Backup / Restore)
+          </h2>
+          <DataStorageManager />
         </section>
 
         <section>
