@@ -42,6 +42,12 @@ export function DecodedPayloadSection({ report }: DecodedPayloadSectionProps) {
   };
 
   const handleOpenPrompt = (url: string) => {
+    const trimmed = url.trim().toLowerCase();
+    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+      toast.error("Navigation blocked: Destination uses a non-HTTP/HTTPS or dangerous protocol.");
+      return;
+    }
+
     setUrlToOpen(url);
     if (isElevatedRisk) {
       setShowWarningModal(true);
@@ -52,6 +58,13 @@ export function DecodedPayloadSection({ report }: DecodedPayloadSectionProps) {
 
   const confirmOpen = () => {
     if (urlToOpen) {
+      const trimmed = urlToOpen.trim().toLowerCase();
+      if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+        toast.error("Navigation blocked: Destination uses a non-HTTP/HTTPS or dangerous protocol.");
+        setShowWarningModal(false);
+        setUrlToOpen(null);
+        return;
+      }
       window.open(urlToOpen, "_blank", "noopener,noreferrer");
       setShowWarningModal(false);
       setUrlToOpen(null);

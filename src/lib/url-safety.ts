@@ -91,7 +91,7 @@ export function analyzeUrlSafety(rawUrl: string): SafetyResult {
   // Brand impersonation
   for (const [brand, legitimateDomains] of Object.entries(BRAND_DOMAINS)) {
     if (host.includes(brand) && !legitimateDomains.some((d) => host === d || host.endsWith("." + d))) {
-      reasons.push(`Domain mentions "${brand}" but isn't the official site`);
+      reasons.push(`Brand impersonation: domain mentions "${brand}" but is not the official site`);
       break;
     }
   }
