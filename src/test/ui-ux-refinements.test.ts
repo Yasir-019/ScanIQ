@@ -1,5 +1,4 @@
-import { describe, it, expect } from "vitest";
-import { SEVERITY_CONFIG, EVIDENCE_NATURE_CONFIG } from "@/components/investigation/CyberBadges";
+import { SEVERITY_CONFIG, EVIDENCE_NATURE_CONFIG } from "@/components/investigation/badge-config";
 import { sanitizeObject } from "@/lib/investigation/sanitization";
 import type { UnifiedInvestigationModel } from "@/lib/investigation/synthesis-types";
 

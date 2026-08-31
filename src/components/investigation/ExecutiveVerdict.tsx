@@ -5,7 +5,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { InvestigationReport } from "@/lib/scan/types";
 import { cn } from "@/lib/utils";
-import { SEVERITY_CONFIG } from "@/components/investigation/CyberBadges";
+import { SEVERITY_CONFIG } from "@/components/investigation/badge-config";
 
 interface ExecutiveVerdictProps {
   report: InvestigationReport;
