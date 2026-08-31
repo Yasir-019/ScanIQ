@@ -16,9 +16,11 @@ import {
   FolderOpen,
   Layers,
   RefreshCw,
+  Network,
 } from "lucide-react";
 import { toast } from "sonner";
 import { db, createNewCase, deleteCaseWithCascade } from "@/lib/db";
+import { IocCorrelationService, type IocSearchResultItem } from "@/lib/investigation/ioc-correlation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -243,8 +245,30 @@ export default function CasesScreen() {
   const settings = useSettings();
 
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"all" | "active" | "starred" | "archived">("all");
+  const [tab, setTab] = useState<"all" | "active" | "starred" | "archived" | "ioc_search">("all");
   const [sortBy, setSortBy] = useState<"updated" | "risk" | "created">("updated");
+
+  // IOC Search State
+  const [iocQuery, setIocQuery] = useState("");
+  const [iocResults, setIocResults] = useState<IocSearchResultItem[]>([]);
+  const [isSearchingIocs, setIsSearchingIocs] = useState(false);
+
+  const handleIocSearch = useCallback(async (searchTerm: string) => {
+    setIocQuery(searchTerm);
+    if (!searchTerm.trim()) {
+      setIocResults([]);
+      return;
+    }
+    setIsSearchingIocs(true);
+    try {
+      const results = await IocCorrelationService.searchIocs(searchTerm);
+      setIocResults(results);
+    } catch {
+      toast.error("Failed to search IOCs across cases.");
+    } finally {
+      setIsSearchingIocs(false);
+    }
+  }, []);
 
   // Modals state
   const [isNewCaseOpen, setIsNewCaseOpen] = useState(false);
@@ -601,7 +625,7 @@ export default function CasesScreen() {
           onValueChange={(v) => setTab(v as typeof tab)}
           className="w-full md:w-auto"
         >
-          <TabsList className="grid grid-cols-4 rounded-2xl bg-secondary/60 p-1">
+          <TabsList className="grid grid-cols-5 rounded-2xl bg-secondary/60 p-1">
             <TabsTrigger value="all" className="rounded-xl text-xs font-semibold">
               All ({totalCount})
             </TabsTrigger>
@@ -614,37 +638,138 @@ export default function CasesScreen() {
             <TabsTrigger value="archived" className="rounded-xl text-xs font-semibold">
               Archived
             </TabsTrigger>
+            <TabsTrigger value="ioc_search" className="rounded-xl text-xs font-semibold flex items-center gap-1">
+              <Network className="h-3 w-3" />
+              <span>IOC Search</span>
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
         {/* Search & Sort Controls */}
-        <div className="flex items-center gap-2 flex-1 max-w-lg">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="Search by label, target URL, tag, ID, or notes…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-10 h-10 rounded-2xl bg-card border-border text-xs"
-            />
-          </div>
+        {tab !== "ioc_search" && (
+          <div className="flex items-center gap-2 flex-1 max-w-lg">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search by label, target URL, tag, ID, or notes…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="pl-10 h-10 rounded-2xl bg-card border-border text-xs"
+              />
+            </div>
 
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="h-10 px-3 rounded-2xl bg-card border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer shrink-0"
-          >
-            <option value="updated">Sort: Recent</option>
-            <option value="risk">Sort: Risk Level</option>
-            <option value="created">Sort: Created</option>
-          </select>
-        </div>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="h-10 px-3 rounded-2xl bg-card border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer shrink-0"
+            >
+              <option value="updated">Sort: Recent</option>
+              <option value="risk">Sort: Risk Level</option>
+              <option value="created">Sort: Created</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. CASE LIST GRID                                                         */}
+      {/* 3. IOC SEARCH & CORRELATION VIEW                                          */}
       {/* ========================================================================= */}
-      {filtered.length === 0 ? (
+      {tab === "ioc_search" ? (
+        <div className="space-y-4">
+          <div className="rounded-3xl border border-border bg-card p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <Network className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-bold text-foreground">Cross-Case Indicator Search</h3>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Search for any domain, IP, hash, URL, or email across all historical investigation dossiers to discover connected cases and previous findings.
+            </p>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Enter domain (e.g. example.com), IP (e.g. 93.184.216.34), or email…"
+                value={iocQuery}
+                onChange={(e) => handleIocSearch(e.target.value)}
+                className="pl-10 h-10 rounded-2xl bg-background text-xs"
+              />
+            </div>
+          </div>
+
+          {isSearchingIocs && (
+            <div className="p-8 text-center text-xs text-muted-foreground">
+              <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary mb-2" />
+              <span>Scanning local case repositories for indicator matches…</span>
+            </div>
+          )}
+
+          {!isSearchingIocs && iocQuery.trim() && iocResults.length === 0 && (
+            <div className="rounded-3xl border border-dashed border-border bg-card p-10 text-center space-y-2">
+              <Network className="h-7 w-7 opacity-40 text-primary mx-auto" />
+              <p className="text-sm font-bold text-foreground">No IOC Occurrences Found</p>
+              <p className="text-xs text-muted-foreground">
+                Indicator &ldquo;{iocQuery}&rdquo; does not appear in any historical cases or scans.
+              </p>
+            </div>
+          )}
+
+          {!isSearchingIocs && iocResults.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {iocResults.map((result) => (
+                <div
+                  key={result.ioc}
+                  className="rounded-3xl border border-border bg-card p-4 space-y-3 shadow-xs hover:border-primary/40 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <Badge variant="outline" className="text-[9px] uppercase font-mono bg-secondary/50 mb-1">
+                        {result.iocType}
+                      </Badge>
+                      <h4 className="font-mono font-bold text-xs text-foreground break-all">{result.ioc}</h4>
+                    </div>
+                    <Badge variant="secondary" className="text-[10px] font-semibold shrink-0">
+                      {result.cases.length} Case{result.cases.length === 1 ? "" : "s"}
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-1.5 pt-2 border-t border-border/40 text-xs">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Appears in Cases:</span>
+                    <div className="space-y-1 max-h-36 overflow-y-auto pr-0.5">
+                      {result.cases.map((c) => (
+                        <div
+                          key={c.id}
+                          className="flex items-center justify-between p-2 rounded-xl bg-secondary/30 border border-border/60 text-[11px]"
+                        >
+                          <div className="min-w-0 pr-2">
+                            <p className="font-semibold text-foreground truncate">{c.label}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">
+                              Updated: {new Date(c.updatedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <SeverityBadge severity={c.risk} />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => open(c.id)}
+                              className="h-6 text-[10px] px-2 rounded-lg"
+                            >
+                              Open
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* ========================================================================= */
+        /* 4. CASE LIST GRID                                                         */
+        /* ========================================================================= */
+        filtered.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border bg-card p-12 text-center space-y-3">
           <Briefcase className="h-8 w-8 text-muted-foreground mx-auto" />
           <div className="space-y-1">
@@ -686,7 +811,7 @@ export default function CasesScreen() {
             />
           ))}
         </div>
-      )}
+      ) )}
 
       {/* ========================================================================= */}
       {/* 4. CREATE NEW CASE DIALOG                                                 */}

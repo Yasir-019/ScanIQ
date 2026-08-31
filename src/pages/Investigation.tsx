@@ -261,7 +261,11 @@ export default function InvestigationScreen() {
 
         {/* TAB 4: INVESTIGATION GRAPH */}
         <TabsContent value="graph" className="mt-4 space-y-4">
-          <InvestigationGraphViewer synthesis={synthesis} />
+          <InvestigationGraphViewer
+            synthesis={synthesis}
+            currentCaseId={inv.caseId}
+            onNavigateToCase={(targetCaseId) => navigate(`/cases?case=${encodeURIComponent(targetCaseId)}`)}
+          />
         </TabsContent>
 
         {/* TAB 5: TIMELINE */}
