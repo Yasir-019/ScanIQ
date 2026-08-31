@@ -85,9 +85,25 @@ export class CredentialStore {
   /**
    * Redacts all known secret values from an error message or log string.
    */
-  public static redact(text: string, knownSecrets: string[]): string {
+  public static redact(text: string, knownSecrets?: string[]): string {
     let result = text;
-    for (const sec of knownSecrets) {
+    const secrets = [...(knownSecrets || [])];
+    try {
+      const apiKeys = useSettings.getState().apiKeys || {};
+      for (const val of Object.values(apiKeys)) {
+        if (typeof val === "string" && val.length >= 4) {
+          secrets.push(val);
+        }
+      }
+    } catch {
+      // Non-react context
+    }
+    
+    // Generic URL param / Authorization header redaction
+    result = result.replace(/([?&](?:key|apikey|api_key|token|auth|secret)=)[^&\s]+/gi, "$1[REDACTED_API_KEY]");
+    result = result.replace(/(?:Bearer\s+)[a-zA-Z0-9_\-.]{12,}/gi, "Bearer [REDACTED_TOKEN]");
+
+    for (const sec of secrets) {
       if (sec && sec.length >= 4) {
         result = result.split(sec).join("[REDACTED_API_KEY]");
       }

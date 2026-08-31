@@ -247,7 +247,7 @@ export default function InvestigationScreen() {
 
         {/* TAB 2: EVIDENCE EXPLORER */}
         <TabsContent value="evidence" className="mt-4 space-y-4">
-          <EvidenceExplorer findings={inv.findings} />
+          <EvidenceExplorer findings={inv.findings} rawContent={inv.rawContent} />
         </TabsContent>
 
         {/* TAB 3: INTEL & INFRASTRUCTURE */}

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SeverityBadge } from "@/components/investigation/CyberBadges";
+import { SeverityBadge, EvidenceNatureBadge } from "@/components/investigation/CyberBadges";
 import type { InvestigationReport } from "@/lib/scan/types";
 import { toast } from "sonner";
 import { scanTypeLabel } from "@/lib/osint/risk";
@@ -490,13 +490,19 @@ export function FormalReportDossier({ isOpen, onClose, report }: FormalReportDos
             {expandedSections.evidence && (
               <div className="space-y-2">
                 {report.findings.map((f) => (
-                  <div key={f.id} className="p-3 rounded-2xl border border-border bg-card space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-foreground text-xs">{f.title}</span>
-                      <SeverityBadge severity={f.severity} className="text-[9px]" />
+                  <div key={f.id} className="p-3 rounded-2xl border border-border bg-card space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="font-bold text-foreground text-xs">{f.title}</span>
+                        <SeverityBadge severity={f.severity} className="text-[9px]" />
+                        <EvidenceNatureBadge nature={f.nature} />
+                      </div>
+                      <span className="text-[9px] font-mono text-muted-foreground bg-secondary/50 px-1.5 py-0.5 rounded">
+                        ID: {f.id}
+                      </span>
                     </div>
                     <p className="text-xs text-muted-foreground">{f.summary}</p>
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/80 font-mono pt-1">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/80 font-mono pt-1 border-t border-border/40">
                       <span>Source: {f.references?.join(", ") || "Local Engine"}</span>
                       <span>·</span>
                       <span>Confidence: {Math.round(f.confidence * 100)}%</span>
