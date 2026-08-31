@@ -12,6 +12,7 @@ import {
 } from "@/lib/investigation/providers";
 import type { RiskEvidence, RiskLevel } from "@/lib/scan/types";
 import type { InvestigationFinding, FindingSeverity, TargetCollection } from "@/lib/investigation/types";
+import { IntelligenceCache } from "@/lib/investigation/cache";
 import { useSettings } from "@/lib/settings";
 
 function mapSeverityToRiskLevel(sev: FindingSeverity): RiskLevel {
@@ -116,6 +117,8 @@ describe("OSINT Provider Foundation (Phase 3A)", () => {
 
   beforeEach(() => {
     RateLimitTracker.clear();
+    IntelligenceCache.clear();
+    IntelligenceCache.clearRateLimits();
     mockProvider = new MockExternalThreatProvider();
     ProviderRegistry.register(mockProvider);
     useSettings.setState({

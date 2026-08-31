@@ -22,6 +22,7 @@ import type {
 } from "../types";
 import { CredentialStore } from "./credential-store";
 import { isConfiguredCredential } from "./config";
+import { IntelligenceCache } from "../cache";
 import { normalizeAndAnalyzeUrl } from "../url-normalizer";
 import { analyzeUrlHeuristics } from "../url-heuristics";
 import { analyzeDomain } from "../domain-analyzer";
@@ -101,7 +102,19 @@ export abstract class BaseIntelligenceProvider implements ProviderMetadata {
       };
     }
 
-    // 3. Check credentials if required (validates against placeholders)
+    // 3. Check rate-limit cooldown for external providers
+    if (this.type === "external") {
+      const rateStatus = IntelligenceCache.getRateLimitStatus(this.id);
+      if (rateStatus.isLimited) {
+        return {
+          ready: false,
+          status: "rate_limited",
+          reason: `Provider '${this.name}' is temporarily rate-limited (cooling down for ${rateStatus.remainingSeconds}s).`,
+        };
+      }
+    }
+
+    // 4. Check credentials if required (validates against placeholders)
     if (this.requiresAuth) {
       const cred = CredentialStore.resolve(this.envKey, this.id);
       const isContextKeyValid = isConfiguredCredential(context.apiKey);
@@ -145,11 +158,13 @@ export abstract class BaseIntelligenceProvider implements ProviderMetadata {
       };
     }
 
-    // 2. Check prerequisites (handles not_configured, disabled, consent_required)
+    // 2. Check prerequisites (handles not_configured, disabled, consent_required, rate_limited)
     const prereq = this.checkPrerequisites(context);
     if (!prereq.ready) {
       const execStatus = prereq.status === "not_configured"
         ? "not_configured"
+        : prereq.status === "rate_limited"
+        ? "rate_limited"
         : prereq.status === "missing_key"
         ? "unauthorized"
         : "skipped";
@@ -202,12 +217,12 @@ export abstract class BaseIntelligenceProvider implements ProviderMetadata {
         queriedAt,
         executionTimeMs: Math.round(performance.now() - startTime),
         status: "success",
-        findings: normalized.findings,
-        evidence: normalized.evidence,
-        reputation: normalized.reputation,
-        rateLimit: normalized.rateLimit,
-        warnings: normalized.warnings || [],
-        metadata: normalized.metadata,
+        findings: Array.isArray(normalized?.findings) ? normalized.findings : [],
+        evidence: Array.isArray(normalized?.evidence) ? normalized.evidence : [],
+        reputation: normalized?.reputation,
+        rateLimit: normalized?.rateLimit,
+        warnings: Array.isArray(normalized?.warnings) ? normalized.warnings : [],
+        metadata: normalized?.metadata,
       };
     } catch (err: unknown) {
       clearTimeout(timer);
@@ -221,10 +236,13 @@ export abstract class BaseIntelligenceProvider implements ProviderMetadata {
       let status: ProviderResult["status"] = "error";
       if (isTimeout) {
         status = "timeout";
-      } else if (cleanError.includes("429") || cleanError.toLowerCase().includes("rate limit")) {
+      } else if (cleanError.includes("429") || cleanError.toLowerCase().includes("rate limit") || cleanError.toLowerCase().includes("too many requests")) {
         status = "rate_limited";
-      } else if (cleanError.includes("401") || cleanError.includes("403") || cleanError.toLowerCase().includes("unauthorized") || cleanError.toLowerCase().includes("forbidden")) {
+        IntelligenceCache.setRateLimitCooldown(this.id, 60);
+      } else if (cleanError.includes("401") || cleanError.includes("403") || cleanError.toLowerCase().includes("unauthorized") || cleanError.toLowerCase().includes("forbidden") || cleanError.toLowerCase().includes("invalid api key")) {
         status = "authentication_error";
+      } else if (cleanError.includes("500") || cleanError.includes("502") || cleanError.includes("503") || cleanError.includes("504") || cleanError.toLowerCase().includes("service unavailable") || cleanError.toLowerCase().includes("bad gateway")) {
+        status = "error";
       } else if (cleanError.toLowerCase().includes("network") || cleanError.toLowerCase().includes("fetch") || cleanError.toLowerCase().includes("failed to fetch")) {
         status = "network_error";
       }

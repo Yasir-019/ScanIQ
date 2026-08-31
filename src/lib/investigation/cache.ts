@@ -31,9 +31,44 @@ const MAX_CACHE_ENTRIES = 500;
 
 export class IntelligenceCache {
   private static store = new Map<string, CacheEntry<unknown>>();
+  private static rateLimits = new Map<string, number>();
 
   private static makeKey(providerId: string, targetValue: string): string {
     return `${providerId.toLowerCase()}::${targetValue.toLowerCase().trim()}`;
+  }
+
+  /**
+   * Sets a temporary cooldown on a provider that returned HTTP 429 Rate Limited.
+   */
+  public static setRateLimitCooldown(providerId: string, cooldownSeconds = 60): void {
+    const expiresAt = Date.now() + cooldownSeconds * 1000;
+    this.rateLimits.set(providerId.toLowerCase(), expiresAt);
+  }
+
+  /**
+   * Checks if a provider is currently in a rate-limit cooldown window.
+   */
+  public static getRateLimitStatus(providerId: string): { isLimited: boolean; remainingSeconds: number } {
+    const expiresAt = this.rateLimits.get(providerId.toLowerCase());
+    if (!expiresAt) return { isLimited: false, remainingSeconds: 0 };
+
+    const now = Date.now();
+    if (now >= expiresAt) {
+      this.rateLimits.delete(providerId.toLowerCase());
+      return { isLimited: false, remainingSeconds: 0 };
+    }
+
+    return {
+      isLimited: true,
+      remainingSeconds: Math.ceil((expiresAt - now) / 1000),
+    };
+  }
+
+  /**
+   * Clears rate limit cooldowns.
+   */
+  public static clearRateLimits(): void {
+    this.rateLimits.clear();
   }
 
   /**

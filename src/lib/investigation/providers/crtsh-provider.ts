@@ -80,7 +80,13 @@ export class CrtshProvider extends BaseIntelligenceProvider {
       throw new Error(`crt.sh query failed with status ${res.status}: ${res.statusText}`);
     }
 
-    const data = (await res.json()) as CrtshEntry[];
+    let data: CrtshEntry[] = [];
+    try {
+      const parsed = await res.json();
+      data = Array.isArray(parsed) ? (parsed as CrtshEntry[]) : [];
+    } catch {
+      throw new Error("crt.sh returned an invalid or non-JSON response.");
+    }
 
     // Cache results for 2 hours
     IntelligenceCache.set(this.id, domain, data, 7200);
