@@ -18,6 +18,7 @@ import type {
   InvestigationFinding,
 } from "../types";
 import { IntelligenceCache } from "../cache";
+import { parseIpv4Notation } from "../url-normalizer";
 
 export interface RdapEvent {
   eventAction: string;
@@ -459,6 +460,21 @@ export class RdapIpProvider extends BaseIntelligenceProvider {
     const cached = IntelligenceCache.get<RdapIpResponse>(this.id, ip);
     if (cached) {
       return { data: cached.data, fromCache: true, ageSeconds: cached.ageSeconds };
+    }
+
+    // Intercept private / loopback IP ranges locally to prevent SSRF and unneeded network traffic
+    const ipInfo = parseIpv4Notation(ip);
+    if (ipInfo.isLoopback || ipInfo.isPrivate) {
+      const localData: RdapIpResponse = {
+        handle: ipInfo.isLoopback ? "LOOPBACK-NET" : "PRIVATE-RFC1918-NET",
+        name: ipInfo.isLoopback ? "Loopback Local Interface" : "Private RFC 1918 Range",
+        type: "LOCAL",
+        country: "ZZ",
+        parentHandle: "IANA-RESERVED",
+        entities: [],
+        events: [],
+      };
+      return { data: localData, fromCache: true, ageSeconds: 0 };
     }
 
     const url = `https://rdap.org/ip/${encodeURIComponent(ip)}`;

@@ -73,7 +73,7 @@ export class GoogleSafeBrowsingProvider extends BaseIntelligenceProvider {
       throw new Error("Google Safe Browsing API key is missing or unconfigured (<CONFIGURE_MANUALLY>).");
     }
 
-    const endpoint = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${encodeURIComponent(apiKey)}`;
+    const endpoint = `https://safebrowsing.googleapis.com/v4/threatMatches:find`;
     const body = {
       client: {
         clientId: "scaniq-threat-intel",
@@ -96,6 +96,7 @@ export class GoogleSafeBrowsingProvider extends BaseIntelligenceProvider {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
       },
       body: JSON.stringify(body),
       signal,

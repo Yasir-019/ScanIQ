@@ -85,15 +85,18 @@ export class IpinfoProvider extends BaseIntelligenceProvider {
     }
 
     const token = context.apiKey;
-    const url = token
-      ? `https://ipinfo.io/${encodeURIComponent(ip)}/json?token=${encodeURIComponent(token)}`
-      : `https://ipinfo.io/${encodeURIComponent(ip)}/json`;
+    const url = `https://ipinfo.io/${encodeURIComponent(ip)}/json`;
+
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
 
     const res = await fetch(url, {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
+      headers,
       signal,
     });
 

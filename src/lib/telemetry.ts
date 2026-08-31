@@ -1,4 +1,5 @@
 import { useSettings } from "./settings";
+import { redactSecrets } from "./investigation/sanitization";
 
 interface LogEvent {
   event: string;
@@ -41,8 +42,6 @@ class TelemetryService {
       },
     };
 
-    console.log(`[Telemetry Event] ${eventName}:`, payload);
-
     if (ENDPOINT && navigator.onLine) {
       try {
         await fetch(ENDPOINT, {
@@ -59,10 +58,13 @@ class TelemetryService {
   async trackCrash(error: Error, componentStack?: string) {
     if (!this.isEnabled()) return;
 
+    const safeMessage = redactSecrets(error.message || String(error));
+    const safeStack = error.stack ? redactSecrets(error.stack) : undefined;
+
     const payload: CrashReport = {
-      message: error.message || String(error),
-      stack: error.stack,
-      componentStack,
+      message: safeMessage,
+      stack: safeStack,
+      componentStack: componentStack ? redactSecrets(componentStack) : undefined,
       timestamp: Date.now(),
     };
 

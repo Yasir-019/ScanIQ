@@ -28,13 +28,28 @@ function isIPHost(host: string): boolean {
   return /^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(host) || host.startsWith("[");
 }
 
+const DANGEROUS_PROTOCOLS = [
+  "javascript:",
+  "vbscript:",
+  "data:",
+  "file:",
+  "blob:",
+  "mhtml:",
+  "shell:",
+  "jar:",
+  "about:",
+  "chrome:",
+  "ms-windows-store:",
+  "intent:",
+];
+
 export function analyzeUrlSafety(rawUrl: string): SafetyResult {
   const reasons: string[] = [];
 
   // Check dangerous protocols
   const lower = rawUrl.trim().toLowerCase();
-  if (lower.startsWith("javascript:") || lower.startsWith("data:")) {
-    return { level: "malicious", reasons: ["Dangerous protocol detected"] };
+  if (DANGEROUS_PROTOCOLS.some((p) => lower.startsWith(p))) {
+    return { level: "malicious", reasons: ["Dangerous or executable protocol detected"] };
   }
 
   let url: URL;
