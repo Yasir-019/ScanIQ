@@ -1,0 +1,48 @@
+name: Feature Request
+description: Suggest an enhancement or new capability for ScanIQ Community.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an enhancement for ScanIQ Community! ScanIQ is focused on local-first, privacy-respecting threat intelligence and QR/barcode OSINT workflows.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a specific problem or workflow friction?
+      placeholder: I am always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution & Workflow
+      description: Describe the feature, user interface, or workflow you would like to see.
+      placeholder: Add support for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+
+  - type: textarea
+    id: privacy_impact
+    attributes:
+      label: Privacy & Architecture Impact
+      description: Does this feature involve external network calls, new dependencies, or local storage? How does it preserve ScanIQ's local-first / BYOK model?
+      placeholder: Operates completely locally using... / Requires optional BYOK key for...
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have checked that a similar feature has not already been requested or implemented.
+          required: true

@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom";
+import "@/lib/i18n";
 
-// LocalStorage mock for Zustand persist
+// LocalStorage mock for Zustand persist & Dexie
 const storageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -44,3 +45,16 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+// Mock ResizeObserver
+globalThis.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock URL createObjectURL / revokeObjectURL for file exports
+if (typeof URL.createObjectURL === "undefined") {
+  URL.createObjectURL = () => "blob:mock-url";
+  URL.revokeObjectURL = () => {};
+}

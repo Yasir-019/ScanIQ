@@ -1,4 +1,4 @@
-# Logs
+# Logs and debug files
 logs
 *.log
 npm-debug.log*
@@ -7,27 +7,45 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node dependencies and build artifacts
 node_modules
 dist
 dist-ssr
 *.local
+.system_generated
+
+# Environment, certificates, and secret files
 .env
 .env.local
 .env.*.local
-.system_generated
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.keystore
+*.jks
 
-# Editor directories and files
+# Testing and coverage artifacts
+coverage/
+.vitest/
+.cache/
+*.tsbuildinfo
+
+# Editor and OS metadata
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Build artifacts
+# Temporary and tooling artifacts
 scripts/
 .lovable/
 .qoder/

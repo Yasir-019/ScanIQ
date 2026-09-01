@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability Disclosure
+    url: https://github.com/Yasir-019/ScanIQ/security/advisories/new
+    about: Privately report a security vulnerability to project maintainers.
+  - name: Questions & Community Discussions
+    url: https://github.com/Yasir-019/ScanIQ/discussions
+    about: Ask questions, share ideas, and discuss workflows with the community.

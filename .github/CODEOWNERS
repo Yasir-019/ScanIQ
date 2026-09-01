@@ -1,0 +1,17 @@
+# ScanIQ Community Code Owners
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default global maintainer for all repository files
+* @Yasir-019
+
+# Security policies and critical threat models
+/SECURITY.md @Yasir-019
+/docs/THREAT_MODEL.md @Yasir-019
+
+# CI/CD Workflows & Release Automation
+/.github/workflows/ @Yasir-019
+/.github/dependabot.yml @Yasir-019
+
+# Cryptographic and Provenance Core
+/src/lib/investigation/evidence-integrity.ts @Yasir-019
+/src/lib/investigation/risk-engine.ts @Yasir-019

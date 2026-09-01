@@ -3,6 +3,15 @@
   "private": true,
   "version": "1.0.0",
   "description": "Free, open-source, privacy-first QR/barcode OSINT and threat-intelligence investigation tool",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scaniq/scaniq.git"
+  },
+  "homepage": "https://github.com/scaniq/scaniq#readme",
+  "bugs": {
+    "url": "https://github.com/scaniq/scaniq/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +20,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:run": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {

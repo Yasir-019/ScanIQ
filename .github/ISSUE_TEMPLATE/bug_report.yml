@@ -1,0 +1,83 @@
+name: Bug Report
+description: File a reproducible bug report to help improve ScanIQ Community.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please verify that your report does not contain sensitive personal data, unredacted API keys, or private internal network targets.
+
+        > [!IMPORTANT]
+        > If you are reporting a security vulnerability, please do NOT use this public form. Report it privately via [GitHub Security Advisories](https://github.com/Yasir-019/ScanIQ/security/advisories/new) or email `security@scaniq.app`.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Provide clear, step-by-step instructions to reproduce the issue.
+      placeholder: |
+        1. Go to '/scan'
+        2. Upload a sample QR image containing '...'
+        3. Click on 'Investigate'
+        4. See unexpected error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. Actual Behavior
+      description: What did you expect to happen, and what happened instead?
+      placeholder: Expected ... but got ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: input_type
+    attributes:
+      label: Ingestion & Input Method
+      description: How was the payload or data ingested?
+      options:
+        - Image Dropzone / File Upload
+        - Camera Live Scan
+        - Text / URI Paste
+        - Case Workspace
+        - Reports / Export
+        - Integrations / Settings
+        - Other
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment & Browser
+      description: Specify your Browser (e.g. Chrome 128, Firefox 130), OS (Windows, Linux, macOS, Android, iOS), and Deployment (Docker, Vercel, Local Dev).
+      placeholder: Chrome 128 on macOS 14.6 (Docker deployment)
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Console Logs or Error Messages
+      description: Paste any browser developer console errors or stack traces (ensure secrets/credentials are redacted).
+      render: shell
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate.
+          required: true
+        - label: I have verified that no sensitive API keys, tokens, or private data are present in this report.
+          required: true

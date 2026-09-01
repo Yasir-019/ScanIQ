@@ -8,7 +8,7 @@ import { InstallBanner } from "@/components/InstallBanner";
 import { useSettings } from "@/lib/settings";
 import AppShell from "@/components/AppShell";
 import ScanScreen from "./pages/Scan";
-import NotFound from "./pages/NotFound.tsx";
+import NotFound from "./pages/NotFound";
 import { telemetry } from "@/lib/telemetry";
 
 const Onboarding = lazy(() => import("./pages/Onboarding"));
